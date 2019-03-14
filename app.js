@@ -1,4 +1,6 @@
+import "normalize.css";
 import KoaAppliction from './inject';
+import Start from './app.vue';
 
 // import path from 'path';
 let client =  app => {
@@ -9,4 +11,4 @@ let client =  app => {
   
 }
 
-new KoaAppliction().start(client, 1029);
+new KoaAppliction().start(client, Start);

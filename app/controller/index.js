@@ -4,51 +4,41 @@ import {
   Post,
   Middleware
 } from 'bitorjs-decorators';
+import index from '../view/index';
 
 @Controller('/')
-@Middleware(async (ctx, next)=>{
-  console.log("..222", ctx.$config.env)
+@Middleware('forbidden')
+@Middleware((ctx,next)=>{
+  console.warn("ddddd...")
   next()
 })
-@Middleware("before")
 export default class {
-
-  @Get('/views')
-  async abbb(ctx, next) {
-    // ctx.set('Content-Type', 'text/html')
-    // 
-    await ctx.render('user');
-    // try {
-    // } catch (error) {
-    //   console.log(error)
-    // }
-    console.log('page ...')
-  }
-
-  @Get('/views/1')
-  async abbb(ctx, next) {
-    
-    return 1;
-  }
-
-  @Post('/login')
-  @Middleware(async (ctx, next)=>{
-    console.log("..rrrr")
+  @Get('/')
+  @Middleware('forbidden')
+  @Middleware((ctx,next)=>{
+    console.warn("yyyy")
     next()
   })
-  b(ctx, next) {
-    ctx.$get('/views/1?a=2&b=3',{
-      a:1,
-      b:2
-    }).then(res=>{
-      console.log("%%%%%%",res)
-      debugger
+  async icon(a, b, c) {
+    console.warn(a, b, c)
+
+    let r = await this.ctx.$post("/api/data/2/3");
+    this.ctx.render(index, {
+      data: this.ctx.$store.state.ttt.data
     })
-    console.log('login ........', ctx.url)
-    ctx.type = 'application/json;charset=UTF-8';
-    return ctx.body = {
-      code: '000001',
-      msg: '登录成功'
-    }
+  }
+
+  @Post('/api/data/:id/:user')
+  @Middleware((req,next)=>{
+    console.warn("bbbbb...")
+    req.params = Object.assign(req.params, {
+      test:1
+    })
+    next()
+  })
+  async b(req) {
+    console.warn('eeee...', req)
+    console.warn('$$$$--',await this.ctx.$service.ff.aa())
+    return this.ctx.$store.state.ttt.data;
   }
 }

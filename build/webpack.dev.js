@@ -1,38 +1,102 @@
-const webpack = require('webpack')
+const webpack = require('webpack');
 const WebpackMerge = require('webpack-merge');
-const WebpackShellPlugin = require('webpack-shell-plugin');
 const base = require('./webpack.base');
-var OpenBrowserPlugin = require('open-browser-webpack-plugin')
-const CleanWebpackPlugin = require('clean-webpack-plugin');
 
+
+var path = require('path');
 const cwd = process.cwd();
 
-// the path(s) that should be cleaned
-let pathsToClean = [
-  'dist'
-]
-
-// the clean options to use
-let cleanOptions = {
-  root: cwd,
-  exclude: ['shared.js'],
-  verbose: true,
-  dry: false
-}
+const postcss = require(path.join(cwd, 'postcss.config'));
 
 module.exports = WebpackMerge(base, {
   mode: 'development',
-  plugins: [
-    new CleanWebpackPlugin(pathsToClean, cleanOptions),
-    new OpenBrowserPlugin({ url: 'http://localhost:1029' }),
-    /* HMR plugin */
-    new webpack.HotModuleReplacementPlugin(),
-    /* 当 HMR 替换时在浏览器控制台输出对用户更友好的模块名字信息 */
-    new webpack.NamedModulesPlugin(),
-    new WebpackShellPlugin({
-      onBuildEnd: [
-        `npm run dev`
+  module: {
+    rules: [{
+      test: /\.(le|c)ss$/,
+      use: [
+        'vue-style-loader',
+        'css-loader',
+        {
+          loader: 'postcss-loader',
+          options: postcss
+        },
+        {
+          loader: 'less-loader',
+          query: {
+            sourceMap: true,
+            globalVars: {
+              "boxWidth": '200px'
+            },
+            modifyVars: {
+              "boxHeight": '200px'
+            }
+          }
+        }
       ]
-    })
-  ]
+    }, {
+      test: /\.s(c|a)ss$/,
+      use: [
+        'vue-style-loader', // creates style nodes from JS strings
+        "css-loader", // translates CSS into CommonJS
+        {
+          loader: 'postcss-loader',
+          options: postcss
+        },
+        {
+          loader: "sass-loader",
+          options: {
+            data: ""
+          }
+        } // compiles Sass to CSS, using Node Sass by default
+      ]
+    }]
+  },
+  optimization: {
+    namedModules: true,
+  },
+  plugins: [
+    new webpack.DefinePlugin({
+      'process.env': {
+        IS_DEV: true,
+      },
+    }),
+    new webpack.HotModuleReplacementPlugin(),
+  ],
+  devtool: 'eval',
+  devServer: {
+    contentBase: path.join(cwd, 'dist'),
+    open: true,
+    host: '0.0.0.0',
+    port: 8100,
+    hot: true,
+    compress: false,
+    inline: true,
+    proxy: {
+      '/xxxx/*': {
+        target: 'http://xxx.xxx.cn',
+        changeOrigin: true,
+        pathRewrite: {
+          '^/yyyy': '/'
+        }
+      },
+    },
+    setup(app){
+      var express = require('express');
+
+      var router = express.Router();
+
+      router.get('/user', function(req, res, next) {
+        res.send('this is bbbbbbbbbbbbbbbbbbbbbbbbbbbbb');
+      });
+
+      router.post('/user', function(req, res, next) {
+        res.send('this is bbbbbbbbbbbbbbbbbbbbbbbbbbbbb');
+      });
+
+      app.use('/', router)
+    }
+  },
+  watchOptions: {
+    ignored: [path.resolve(cwd, 'dist/**/*.*'), path.resolve(cwd, 'node_modules')]
+  }
 });

@@ -1,22 +1,23 @@
 import {
   Service
 } from 'bitorjs-decorators';
-import axios from '../libs/axios';
 
-@Service("ff")
+@Service('ff')
 export default class {
-  async aa(){
+  
+  async aa() {
+    // console.log(this.ctx.axios)
     console.warn('09998')
-    axios.get('/').then(res => {
-      console.log(res)
+    this.ctx.$ajax.get('/user').then(res => {
+      console.warn(res)
     })
-    const res = await axios.get('/');
+
+    this.ctx.$ajax.post('/user').then(res => {
+      console.warn(res)
+    })
+
+    const res = await this.ctx.$ajax.get('/');
     console.warn(res)
     return 'from service2-' + res;
   }
-
-  async bb(){
-    // this.ctx.db.query()
-  }
-
 }

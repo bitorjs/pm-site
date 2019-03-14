@@ -28,9 +28,14 @@ export default  class {
     const arr = Object.getOwnPropertySymbols(_cache);
     for (let index = 0; index < arr.length; index++) {
       const k = arr[index];
+      console.log(k, _cache[k] )
       if(_cache[k]['k']===key) return true;
     }
     return false;
+  }
+
+  remove(){
+    return 1;
   }
 
   get size(){
