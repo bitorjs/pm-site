@@ -2,8 +2,8 @@ import "normalize.css";
 import Vue from 'vue';
 import KoaAppliction from './inject';
 import Start from './app.vue';
-import { Select,Button,List, Icon } from 'ant-design-vue';
-Vue.use(Select).use(Button).use(List).use(Icon);
+import {Input, Select, AutoComplete,Button,List, Icon } from 'ant-design-vue';
+Vue.use(Input).use(Select).use(AutoComplete).use(Button).use(List).use(Icon);
 
 // import path from 'path';
 let client =  app => {

@@ -2,18 +2,43 @@
   <div>
     <header class="header">
       <center>
+        <div class="logo">
+          <svg viewBox="0 0 780 250"><path fill="#231F20" d="M240,250h100v-50h100V0H240V250z M340,50h50v100h-50V50z M480,0v200h100V50h50v150h50V50h50v150h50V0H480z M0,200h100V50h50v150h50V0H0V200z"></path></svg>
+        </div>
         <nav class="search-inner">
-          <a-select class="search" mode="combobox" placeholder="asdfasd" :tokenSeparators="[',']" @change="handleChange">
-              <a-select-option v-for="i in 25" :key="(i + 9).toString(36) + i">{{(i + 9).toString(36) + i}}</a-select-option>
-            </a-select>
-            <a-button class="button">Search</a-button>
-          </nav>
+          <a-auto-complete
+            class="global-search"
+            size="large"
+            style="width: 100%"
+            @select="onSelect"
+            @search="handleSearch"
+            placeholder="input here"
+            optionLabelProp="text"
+          >
+            <template slot="dataSource">
+              <a-select-option v-for="item in dataSource" :key="item.category" :text="item.category">
+                {{item.query}} 在
+                <a
+                  :href="`/#/search?q=${item.query}`"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {{item.category}}
+                </a>
+              </a-select-option>
+            </template>
+            <a-input>
+              <a-button slot="suffix" class="search-btn" size="large">
+                Search
+              </a-button>
+            </a-input>
+          </a-auto-complete>
+        </nav>
       </center>
-      
     </header>
     <div class="content">
       <transition name="fade" mode="out-in">
-          <router-view class="inner-content"></router-view>
+        <router-view class="inner-content"></router-view>
       </transition>
     </div>
   </div>
@@ -21,17 +46,32 @@
 <script>
 export default {
   nane: "StartPage",
-  props: {
-    
-  },
-  methods: {
-    handleChange(value) {
-      console.log(`selected ${value}`);
+  data() {
+    return {
+      dataSource: [],
     }
   },
-  watch: {
-    "ctx.$store.state.title"(oldTitle, newTitle) {
-      // document.title = newTitle;
+  methods: {
+    onSelect(value) {
+      console.log('onSelect', value);
+    },
+
+    handleSearch(value) {
+      this.dataSource = value ? this.searchResult(value) : []
+      window.location.hash = '/search?q='+value;
+    },
+
+    getRandomInt(max, min = 0) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    },
+
+    searchResult(query) {
+      return (new Array(this.getRandomInt(5))).join('.').split('.')
+        .map((item, idx) => ({
+          query,
+          category: `${query}${idx}`,
+          count: this.getRandomInt(200, 100),
+        }));
     }
   }
 };
@@ -72,32 +112,22 @@ center {
   right: 0;
   padding: 10px 1rem 0;
   .logo{
+    display: inline-block;
     width: 100px;
     height: 40px;
   }
   .search-inner{
+    display: inline-block;
+    vertical-align: text-bottom;
     height: 40px;
-    // font-size: 0;
-    // width: 50%;
-
-    .search{
-      height: 100%;
-      width: calc(100% - 100px);
-    }
-
-    .button{
-      width: 100px;
-      vertical-align: top;
-      font-size: 14px;
-      float: right;
-    }
+    width: 50%;
   }
 }
 
 .content{
   margin-top: 55px;
-  background: #cccccc;
-  max-height: 100vh;
+  background: #f6f6f6;
+  min-height: 100vh;
   .inner-content{
     max-width: 80%;
     margin: 0 auto;
@@ -106,17 +136,49 @@ center {
   }
 }
 
-@media screen and (max-width: 767px) { 
+@media only screen and (max-width: 767px) { 
   .search-inner{
-    width: 100%;
+    width: 100%!important;
+    // .search {
+    //   width: calc(100% - 100px)!important;
+    // }
+  }
+  .logo{
+    display: block!important;
+  }
+  .header{
+    height: 95px;
+  }
+
+  .content {
+    margin-top: 90px!important;
   }
 }
 
-@media screen and (min-width: 768px) { 
-  .search-inner{
-    width: 50%;
-  }
+.global-search-wrapper {
+  padding-right: 50px;
 }
 
+.global-search {
+  width: 100%;
+}
+
+.global-search.ant-select-auto-complete .ant-input-affix-wrapper .ant-input:not(:last-child) {
+  padding-right: 62px;
+}
+
+.global-search.ant-select-auto-complete .ant-input-affix-wrapper .ant-input-suffix {
+  right: 0;
+}
+
+.global-search.ant-select-auto-complete .ant-input-affix-wrapper .ant-input-suffix button {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+.global-search-item-count {
+  position: absolute;
+  right: 16px;
+}
 </style>
 
