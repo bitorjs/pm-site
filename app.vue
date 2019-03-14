@@ -1,26 +1,32 @@
 <template>
   <div>
     <header class="header">
-      <nav class="inner">
-       sdfsd
-      </nav>
+      <center>
+        <nav class="search-inner">
+          <a-select class="search" mode="combobox" placeholder="asdfasd" :tokenSeparators="[',']" @change="handleChange">
+              <a-select-option v-for="i in 25" :key="(i + 9).toString(36) + i">{{(i + 9).toString(36) + i}}</a-select-option>
+            </a-select>
+            <a-button class="button">Search</a-button>
+          </nav>
+      </center>
+      
     </header>
-    <transition name="fade" mode="out-in">
-        <router-view></router-view>
-    </transition>
+    <div class="content">
+      <transition name="fade" mode="out-in">
+          <router-view class="inner-content"></router-view>
+      </transition>
+    </div>
   </div>
 </template>
 <script>
 export default {
   nane: "StartPage",
   props: {
-    title: { type: String, default: "所有组件" }, //,
-    back: { type: Boolean, default: true } // false
+    
   },
   methods: {
-    onClickLeft() {
-      // this.$bitor.store.root.setItem("title", "所有组件");
-      this.ctx.app.redirect("/");
+    handleChange(value) {
+      console.log(`selected ${value}`);
     }
   },
   watch: {
@@ -47,7 +53,6 @@ html,
 body {
   display: inline-block;
   width: 100%;
-  // height: 100%;
   overflow-x: hidden;
 }
 div,
@@ -56,10 +61,62 @@ center {
   box-sizing: border-box;
 }
 .header{
+  background: white;
   box-shadow: 0 4px 13px -3px rgba(0, 0, 0, 0.10196);
   border-bottom: 1px solid #d2d2d2;
-  -ms-flex: 0 0 auto;
-  flex: 0 0 auto;
+  position: fixed;
+  z-index: 999;
+  height: 55px;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding: 10px 1rem 0;
+  .logo{
+    width: 100px;
+    height: 40px;
+  }
+  .search-inner{
+    height: 40px;
+    // font-size: 0;
+    // width: 50%;
+
+    .search{
+      height: 100%;
+      width: calc(100% - 100px);
+    }
+
+    .button{
+      width: 100px;
+      vertical-align: top;
+      font-size: 14px;
+      float: right;
+    }
+  }
 }
+
+.content{
+  margin-top: 55px;
+  background: #cccccc;
+  max-height: 100vh;
+  .inner-content{
+    max-width: 80%;
+    margin: 0 auto;
+    background: white;
+    padding: 1rem;
+  }
+}
+
+@media screen and (max-width: 767px) { 
+  .search-inner{
+    width: 100%;
+  }
+}
+
+@media screen and (min-width: 768px) { 
+  .search-inner{
+    width: 50%;
+  }
+}
+
 </style>
 

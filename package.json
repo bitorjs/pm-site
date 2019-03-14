@@ -23,6 +23,7 @@
   },
   "homepage": "https://github.com/bitorjs/ui#readme",
   "dependencies": {
+    "ant-design-vue": "^1.3.5",
     "bitorjs-application": "^1.0.10",
     "bitorjs-decorators": "^1.0.2",
     "bitorjs-router": "^1.0.3",
@@ -58,6 +59,7 @@
     "@babel/preset-env": "^7.3.4",
     "autoprefixer": "^9.4.10",
     "babel-loader": "^8.0.4",
+    "babel-plugin-import": "^1.11.0",
     "clean-webpack-plugin": "^1.0.1",
     "copy-webpack-plugin": "^4.6.0",
     "css-loader": "^1.0.1",
