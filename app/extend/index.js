@@ -10,12 +10,10 @@ import {
   getUploadDirName,
   checkDirExist,
   getUploadFileName
-} from '../libs/index';
+} from '../lib/index';
 
 const cwd = process.cwd();
 export default app => {
-  // app.use(redis());
-  // app.use(mail())
   app.use(views(path.join(__dirname, '../app/view'), {
     extension: 'html',
     map: {
@@ -43,7 +41,7 @@ export default app => {
     multipart: true, // 支持文件上传
     // encoding: 'gzip',
     // jsonStrict: false, // for json
-    parsedMethods:['POST', 'PUT', 'PATCH'],
+    parsedMethods: ['POST', 'PUT', 'PATCH'],
     formidable: {
       uploadDir: path.join(cwd, 'public/upload/'), // 设置文件上传目录
       keepExtensions: true, // 保持文件的后缀
