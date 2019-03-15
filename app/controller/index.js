@@ -6,6 +6,7 @@ import {
 } from 'bitorjs-decorators';
 import index from '../view/index';
 import search from '../view/search';
+import pkg from '../view/pkg';
 
 @Controller('/')
 export default class {
@@ -28,7 +29,7 @@ export default class {
   @Get('/package')
   async package(a, b, c) {
 
-    this.ctx.render(search, {
+    this.ctx.render(pkg, {
       data: this.ctx.$store.state.ttt.data
     })
   }

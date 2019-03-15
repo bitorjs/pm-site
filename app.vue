@@ -10,9 +10,10 @@
             class="global-search"
             size="large"
             style="width: 100%"
+            :allowClear="true"
             @select="onSelect"
             @search="handleSearch"
-            placeholder="input here"
+            placeholder="search"
             optionLabelProp="text"
           >
             <template slot="dataSource">
@@ -114,7 +115,8 @@ center {
   .logo{
     display: inline-block;
     width: 100px;
-    height: 40px;
+    height: 16px;
+    padding: 5px 16px;
   }
   .search-inner{
     display: inline-block;
@@ -132,18 +134,16 @@ center {
     max-width: 80%;
     margin: 0 auto;
     background: white;
-    padding: 1rem;
+    // padding: 1rem;
   }
 }
 
 @media only screen and (max-width: 767px) { 
   .search-inner{
     width: 100%!important;
-    // .search {
-    //   width: calc(100% - 100px)!important;
-    // }
   }
   .logo{
+    height: 33px!important;
     display: block!important;
   }
   .header{
@@ -159,10 +159,6 @@ center {
   padding-right: 50px;
 }
 
-.global-search {
-  width: 100%;
-}
-
 .global-search.ant-select-auto-complete .ant-input-affix-wrapper .ant-input:not(:last-child) {
   padding-right: 62px;
 }
@@ -174,6 +170,10 @@ center {
 .global-search.ant-select-auto-complete .ant-input-affix-wrapper .ant-input-suffix button {
   border-top-left-radius: 0;
   border-bottom-left-radius: 0;
+}
+
+.ant-select-selection__clear{
+  right: 100px;
 }
 
 .global-search-item-count {
