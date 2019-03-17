@@ -1,12 +1,13 @@
-var mkdirp = require('mkdirp');
-var copy = require('copy-to');
-var path = require('path');
-var fs = require('fs');
-var os = require('os');
-var nfs = require('fs-cnpm');
-var utility = require('utility');
+import os from 'os';
+import fs from 'fs';
+import path from 'path';
+import nfs from 'fs-cnpm';
+import utility from 'utility';
+import mkdirp from 'mkdirp';
+import copy from 'copy-to';
+import pkg from '../package.json';
 
-var version = require('../package.json').version;
+var version = pkg.version;
 
 var root = path.dirname(__dirname);
 var dataDir = path.join(process.env.HOME || root, '.cnpmjs.org');
@@ -71,7 +72,7 @@ const config = {
   // default system admins
   admins: {
     // name: email
-    fengmk2: 'fengmk2@gmail.com',
+    huangzj: '773155801@qq.com',
     admin: 'admin@cnpmjs.org',
     dead_horse: 'dead_horse@qq.com',
   },
@@ -79,13 +80,16 @@ const config = {
   // email notification for errors
   // check https://github.com/andris9/Nodemailer for more informations
   mail: {
-    enable: false,
-    appname: 'cnpmjs.org',
+    enable: true,
+    appname: 'cnpmjs.test',
     from: 'cnpmjs.org mail sender <adderss@gmail.com>',
-    service: 'gmail',
+    service: 'qq',
+    port: 465,
+    secureConnection: true, // 使用 SSL
     auth: {
-      user: 'address@gmail.com',
-      pass: 'your password'
+      user: '773155801@qq.com',
+      //这里密码不是qq密码，是你设置的smtp密码
+      pass: 'htgmlubksnodbcid'
     }
   },
 
@@ -106,16 +110,16 @@ const config = {
    */
 
   database: {
-    db: 'cnpmjs_test',
+    db: 'cpm',
     username: 'root',
-    password: '',
+    password: 'root',
 
     // the sql dialect of the database
     // - currently supported: 'mysql', 'sqlite', 'postgres', 'mariadb'
-    dialect: 'sqlite',
+    dialect: 'mysql',
 
     // custom host; default: 127.0.0.1
-    host: '127.0.0.1',
+    host: 'localhost',
 
     // custom port; default: 3306
     port: 3306,
@@ -135,7 +139,7 @@ const config = {
 
     // the storage engine for 'sqlite'
     // default store into ~/.cnpmjs.org/data.sqlite
-    storage: path.join(dataDir, 'data.sqlite'),
+    // storage: path.join(dataDir, 'data.sqlite'),
 
     logging: !!process.env.SQL_DEBUG,
   },
@@ -277,41 +281,41 @@ const config = {
 }
 
 
-if (process.env.NODE_ENV === 'test') {
-  config.enableAbbreviatedMetadata = true;
-  config.customRegistryMiddlewares.push(() => {
-    return function* (next) {
-      this.set('x-custom-middleware', 'true');
-      yield next;
-    };
-  });
-}
+// if (process.env.NODE_ENV === 'test') {
+//   config.enableAbbreviatedMetadata = true;
+//   config.customRegistryMiddlewares.push(() => {
+//     return function* (next) {
+//       this.set('x-custom-middleware', 'true');
+//       yield next;
+//     };
+//   });
+// }
 
-if (process.env.NODE_ENV !== 'test') {
-  var customConfig;
-  if (process.env.NODE_ENV === 'development') {
-    customConfig = path.join(root, 'config', 'config.js');
-  } else {
-    // 1. try to load `$dataDir/config.json` first, not exists then goto 2.
-    // 2. load config/config.js, everything in config.js will cover the same key in index.js
-    customConfig = path.join(dataDir, 'config.json');
-    if (!fs.existsSync(customConfig)) {
-      customConfig = path.join(root, 'config', 'config.js');
-    }
-  }
-  if (fs.existsSync(customConfig)) {
-    copy(require(customConfig)).override(config);
-  }
-}
+// if (process.env.NODE_ENV !== 'test') {
+//   var customConfig;
+//   if (process.env.NODE_ENV === 'development') {
+//     customConfig = path.join(root, 'config', 'config.js');
+//   } else {
+//     // 1. try to load `$dataDir/config.json` first, not exists then goto 2.
+//     // 2. load config/config.js, everything in config.js will cover the same key in index.js
+//     customConfig = path.join(dataDir, 'config.json');
+//     if (!fs.existsSync(customConfig)) {
+//       customConfig = path.join(root, 'config', 'config.js');
+//     }
+//   }
+//   if (fs.existsSync(customConfig)) {
+//     copy(require(customConfig)).override(config);
+//   }
+// }
 
 mkdirp.sync(config.logdir);
 mkdirp.sync(config.uploadDir);
 
-config.loadConfig = function (customConfig) {
-  if (!customConfig) {
-    return;
-  }
-  copy(customConfig).override(config);
-};
+// config.loadConfig = function (customConfig) {
+//   if (!customConfig) {
+//     return;
+//   }
+//   copy(customConfig).override(config);
+// };
 
 export default config;

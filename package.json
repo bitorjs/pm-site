@@ -45,10 +45,11 @@
     "webpack-shell-plugin": "^0.5.0"
   },
   "dependencies": {
-    "axios": "^0.18.0",
     "bitorjs-decorators": "^1.0.2",
     "copy-to": "^2.0.1",
+    "error-formater": "^1.0.3",
     "fs-cnpm": "^2.0.0",
+    "gravatar": "^1.8.0",
     "koa": "^2.7.0",
     "koa-body": "^4.1.0",
     "koa-compress": "^3.0.0",
@@ -60,11 +61,16 @@
     "koa-static": "^5.0.0",
     "koa-views": "^6.1.5",
     "koa2-cors": "^2.0.6",
-    "mysql": "^2.16.0",
+    "markdown-it": "^8.4.2",
+    "mini-logger": "^1.1.3",
+    "mysql2": "^1.6.5",
     "nodemailer": "^5.1.1",
     "nunjucks": "^3.2.0",
+    "pg-hstore": "^2.3.2",
     "qs": "^6.6.0",
     "redis": "^2.8.0",
-    "utility": "^1.15.1"
+    "sequelize": "^5.1.0",
+    "utility": "^1.15.1",
+    "xss": "^1.0.3"
   }
 }

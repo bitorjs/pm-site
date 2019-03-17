@@ -4,7 +4,14 @@ const pkg = require('../package.json');
 const cwd = process.cwd();
 
 const babel = require(path.join(cwd, '.babelrc.js'));
-const nodeModules = {};
+const nodeModules = {
+  // pg: 'pg',
+  // sqlite3: 'sqlite3',
+  // tedious: 'tedious',
+  // pg_hstore: 'pg-hstore'
+  // 'sequelize': "require('sequelize')",
+  "sequelize": "sequelize",
+};
 
 fs.readdirSync('node_modules')
   .filter((catalogue) => {
@@ -46,7 +53,7 @@ module.exports = {
   module: {
     rules: [{
       test: /\.js$/,
-      // exclude: /node_modules/,
+      exclude: /node_modules/,
       loader: "babel-loader",
       options: babel
     },

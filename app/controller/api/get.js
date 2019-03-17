@@ -4,13 +4,17 @@ import {
   Middleware
 } from 'bitorjs-decorators';
 
+import { User } from '../../models';
+
 @Controller('/')
 export default class {
 
   @Get('/')
   async a(ctx, next) {
 
-    ctx.body = 'api total';
+    console.log(User.findAll)
+
+    ctx.body = {};
   }
 
   // before /:name/:version
