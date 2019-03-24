@@ -14,8 +14,10 @@ CREATE TABLE IF NOT EXISTS `npm_module_maintainer` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='npm original module maintainers';
  */
 const Sequelize = require('sequelize');
+const mountClass = require('./parts/_module_maintainer_class_methods');
+
 module.exports = function (sequelize) {
-  return sequelize.define('NpmModuleMaintainer', {
+  const NpmModuleMaintainer = sequelize.define('NpmModuleMaintainer', {
     user: {
       type: Sequelize.STRING(100),
       allowNull: false,
@@ -39,6 +41,9 @@ module.exports = function (sequelize) {
           fields: ['name'],
         }
       ],
-      classMethods: require('./parts/_module_maintainer_class_methods'),
     });
+
+  mountClass(NpmModuleMaintainer)
+
+  return NpmModuleMaintainer;
 };

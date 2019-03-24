@@ -21,6 +21,7 @@ CREATE TABLE IF NOT EXISTS `user` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='user base info';
 */
 const Sequelize = require('sequelize');
+const Op = Sequelize.Op;
 module.exports = function (sequelize) {
   const User = sequelize.define('User', {
     name: {
@@ -83,158 +84,157 @@ module.exports = function (sequelize) {
         {
           fields: ['gmt_modified'],
         }
-      ],
-      classMethods: {
-        // utils
-        createPasswordSha: function (password, salt) {
-          return utility.sha1(password + salt);
-        },
+      ]
+    });
 
-        // read
-        auth: function (name, password) {
-          var user = User.findByName(name);
-          if (user) {
-            var sha = this.createPasswordSha(password, user.salt);
-            if (user.password_sha !== sha) {
-              user = null;
-            }
-          }
-          return user;
-        },
-        findByName: function (name) {
-          return User.find({ where: { name: name } });
-        },
-        listByNames: function (names) {
-          if (!names || names.length === 0) {
-            return [];
-          }
-          return User.findAll({
-            where: {
-              name: {
-                in: names
-              }
-            }
-          });
-        },
-        search: function (query, options) {
-          return User.findAll({
-            where: {
-              name: {
-                like: query + '%'
-              }
-            },
-            limit: options.limit
-          });
-        },
+  // utils
+  User.createPasswordSha = function (password, salt) {
+    return utility.sha1(password + salt);
+  }
 
-        // write
-        saveNpmUser: function (data) {
-          var user = User.findByName(data.name);
-          if (!user) {
-            user = User.build({
-              isNpmUser: true,
-              name: data.name,
-              salt: '0',
-              password_sha: '0',
-              ip: '0',
-            });
-          }
-          user.isNpmUser = true;
-          user.json = data;
-          user.email = data.email || '';
-          user.rev = data._rev || '';
-          if (user.changed()) {
-            user = user.save();
-          }
-          return user;
-        },
-        saveCustomUser: function (data) {
-          var name = data.user.login;
-          var user = User.findByName(name);
-          if (!user) {
-            user = User.build({
-              isNpmUser: false,
-              name: name,
-            });
-          }
-
-          var rev = '1-' + data.user.login;
-          var salt = data.salt || '0';
-          var passwordSha = data.password_sha || '0';
-          var ip = data.ip || '0';
-
-          user.isNpmUser = false;
-          user.email = data.user.email;
-          user.ip = ip;
-          user.json = data.user;
-          user.rev = rev;
-          user.salt = salt;
-          user.password_sha = passwordSha;
-          if (user.changed()) {
-            user = user.save();
-          }
-          return user;
-        },
-
-        // add cnpm user
-        add: function (user) {
-          var roles = user.roles || [];
-          try {
-            roles = JSON.stringify(roles);
-          } catch (e) {
-            roles = '[]';
-          }
-          var rev = '1-' + utility.md5(JSON.stringify(user));
-
-          var row = User.build({
-            rev: rev,
-            name: user.name,
-            email: user.email,
-            salt: user.salt,
-            password_sha: user.password_sha,
-            ip: user.ip,
-            roles: roles,
-            isNpmUser: false,
-          });
-
-          return row.save();
-        },
-
-        update: function (user) {
-          var rev = user.rev || user._rev;
-          var revNo = Number(rev.split('-', 1));
-          if (!revNo) {
-            var err = new Error(rev + ' format error');
-            err.name = 'RevFormatError';
-            err.data = { user: user };
-            throw err;
-          }
-          revNo++;
-          var newRev = revNo + '-' + utility.md5(JSON.stringify(user));
-          var roles = user.roles || [];
-          try {
-            roles = JSON.stringify(roles);
-          } catch (e) {
-            roles = '[]';
-          }
-
-          var row = User.findByName(user.name);
-          if (!row) {
-            return null;
-          }
-
-          row.rev = newRev;
-          row.email = user.email;
-          row.salt = user.salt;
-          row.password_sha = user.password_sha;
-          row.ip = user.ip;
-          row.roles = roles;
-          row.isNpmUser = false;
-
-          return row.save(['rev', 'email', 'salt', 'password_sha', 'ip', 'roles', 'isNpmUser']);
+  // read
+  User.auth = async (name, password) => {
+    var user = await User.findByName(name);
+    if (user) {
+      var sha = User.createPasswordSha(password, user.salt);
+      if (user.password_sha !== sha) {
+        user = null;
+      }
+    }
+    return user;
+  }
+  User.findByName = async (name) => {
+    return await User.findOne({ where: { name: name } });
+  }
+  User.listByNames = async (names) => {
+    if (!names || names.length === 0) {
+      return [];
+    }
+    return await User.findAll({
+      where: {
+        name: {
+          [Op.in]: names
         }
       }
     });
+  }
+  User.search = async (query, options) => {
+    return await User.findAll({
+      where: {
+        name: {
+          [Op.like]: query + '%'
+        }
+      },
+      limit: options.limit
+    });
+  }
+
+  // write
+  User.saveNpmUser = async (data) => {
+    var user = await User.findByName(data.name);
+    if (!user) {
+      user = User.build({
+        isNpmUser: true,
+        name: data.name,
+        salt: '0',
+        password_sha: '0',
+        ip: '0',
+      });
+    }
+    user.isNpmUser = true;
+    user.json = data;
+    user.email = data.email || '';
+    user.rev = data._rev || '';
+    if (user.changed()) {
+      user = await user.save();
+    }
+    return user;
+  }
+  User.saveCustomUser = async (data) => {
+    var name = data.user.login;
+    var user = await User.findByName(name);
+    if (!user) {
+      user = User.build({
+        isNpmUser: false,
+        name: name,
+      });
+    }
+
+    var rev = '1-' + data.user.login;
+    var salt = data.salt || '0';
+    var passwordSha = data.password_sha || '0';
+    var ip = data.ip || '0';
+
+    user.isNpmUser = false;
+    user.email = data.user.email;
+    user.ip = ip;
+    user.json = data.user;
+    user.rev = rev;
+    user.salt = salt;
+    user.password_sha = passwordSha;
+    if (user.changed()) {
+      user = await user.save();
+    }
+    return user;
+  }
+
+  // add cnpm user
+  User.add = async (user) => {
+    var roles = user.roles || [];
+    try {
+      roles = JSON.stringify(roles);
+    } catch (e) {
+      roles = '[]';
+    }
+    var rev = '1-' + utility.md5(JSON.stringify(user));
+
+    var row = User.build({
+      rev: rev,
+      name: user.name,
+      email: user.email,
+      salt: user.salt,
+      password_sha: user.password_sha,
+      ip: user.ip,
+      roles: roles,
+      isNpmUser: false,
+    });
+
+    return await row.save();
+  }
+
+  User.update = async (user) => {
+    var rev = user.rev || user._rev;
+    var revNo = Number(rev.split('-', 1));
+    if (!revNo) {
+      var err = new Error(rev + ' format error');
+      err.name = 'RevFormatError';
+      err.data = { user: user };
+      throw err;
+    }
+    revNo++;
+    var newRev = revNo + '-' + utility.md5(JSON.stringify(user));
+    var roles = user.roles || [];
+    try {
+      roles = JSON.stringify(roles);
+    } catch (e) {
+      roles = '[]';
+    }
+
+    var row = await User.findByName(user.name);
+    if (!row) {
+      return null;
+    }
+
+    row.rev = newRev;
+    row.email = user.email;
+    row.salt = user.salt;
+    row.password_sha = user.password_sha;
+    row.ip = user.ip;
+    row.roles = roles;
+    row.isNpmUser = false;
+
+    return await row.save(['rev', 'email', 'salt', 'password_sha', 'ip', 'roles', 'isNpmUser']);
+  }
 
   return User;
 };

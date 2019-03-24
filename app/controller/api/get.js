@@ -38,9 +38,11 @@ export default class {
   // install module
   // scope package: params: [$name]
   @Get('/@:scope([\\w\\-\\.]+)/:name([\\w\\-\\.]+)')
+  @Middleware('syncByInstall')
+  @Middleware('list')
   async e(ctx, next) {
-    console.log(ctx.params)
-    ctx.body = '@'
+    console.log('get', 'e', ctx.params)
+    ctx.body = {};
     return 1;
   }
   @Get('/@:scope([\\w\\-\\.]+)/:name([\\w\\-\\.]+)/:version([^\/]+)')
@@ -49,7 +51,8 @@ export default class {
     return 1;
   }
   @Get('/:name([\\w\\-\\.]+)')
-  @Middleware('syncByInstall')
+  // @Middleware('syncByInstall')
+  // @Middleware('list')
   async g(ctx, next) {
     console.log('get g')
     ctx.body = ctx.params.name;

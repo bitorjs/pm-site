@@ -39,15 +39,14 @@ module.exports = function (sequelize) {
         {
           fields: ['gmt_modified'],
         },
-      ],
-      classMethods: {
-        findByName: function (name) {
-          return PackageReadme.find({
-            where: { name: name },
-          });
-        }
-      }
+      ]
     });
+
+  PackageReadme.findByName = async (name) => {
+    return await PackageReadme.findOne({
+      where: { name: name },
+    });
+  }
 
   return PackageReadme;
 };

@@ -52,11 +52,12 @@ module.exports = function (sequelize) {
         }
       ],
       classMethods: {
-        findByNameAndTag: function (name, tag) {
-          return Tag.find({ where: { name: name, tag: tag } });
-        }
+
       }
     });
 
+  Tag.findByNameAndTag = async (name, tag) => {
+    return await Tag.findOne({ where: { name: name, tag: tag } });
+  }
   return Tag;
 };

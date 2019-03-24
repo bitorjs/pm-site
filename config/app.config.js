@@ -4,7 +4,6 @@ import path from 'path';
 import nfs from 'fs-cnpm';
 import utility from 'utility';
 import mkdirp from 'mkdirp';
-import copy from 'copy-to';
 import pkg from '../package.json';
 
 var version = pkg.version;
@@ -73,8 +72,7 @@ const config = {
   admins: {
     // name: email
     huangzj: '773155801@qq.com',
-    admin: 'admin@cnpmjs.org',
-    dead_horse: 'dead_horse@qq.com',
+    admin: 'huangzhengjie@dingtalk.org',
   },
 
   // email notification for errors
@@ -92,13 +90,6 @@ const config = {
       pass: 'htgmlubksnodbcid'
     }
   },
-
-  logoURL: 'https://os.alipayobjects.com/rmsportal/oygxuIUkkrRccUz.jpg', // cnpm logo image url
-  adBanner: '',
-  customReadmeFile: '', // you can use your custom readme file instead the cnpm one
-  customFooter: '', // you can add copyright and site total script html here
-  npmClientName: 'cnpm', // use `${name} install package`
-  packagePageContributorSearch: true, // package page contributor link to search, default is true
 
   // max handle number of package.json `dependencies` property
   maxDependencies: 200,
@@ -152,7 +143,7 @@ const config = {
   downloadRedirectToNFS: false,
 
   // registry url name
-  registryHost: 'r.cnpmjs.org',
+  registryHost: 'localhost:1029',
 
   /**
    * registry mode config
@@ -164,7 +155,7 @@ const config = {
   enablePrivate: false,
 
   // registry scopes, if don't set, means do not support scopes
-  scopes: ['@cnpm', '@cnpmtest', '@cnpm-test'],
+  scopes: ['@cnpm', '@cnpmtest', '@cnpm-test', '@bitores'],
 
   // some registry already have some private packages in global scope
   // but we want to treat them as scoped private packages,

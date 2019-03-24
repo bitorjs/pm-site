@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS `module_keyword` (
  */
 const Sequelize = require('sequelize');
 module.exports = function (sequelize) {
-  return sequelize.define('ModuleKeyword', {
+  const ModuleKeyword = sequelize.define('ModuleKeyword', {
     keyword: {
       type: Sequelize.STRING(100),
       allowNull: false,
@@ -46,14 +46,17 @@ module.exports = function (sequelize) {
         }
       ],
       classMethods: {
-        findByKeywordAndName: function* (keyword, name) {
-          return yield this.find({
-            where: {
-              keyword: keyword,
-              name: name
-            }
-          });
-        }
+
       }
     });
+
+  ModuleKeyword.findByKeywordAndName = async (keyword, name) => {
+    return await ModuleKeyword.findOne({
+      where: {
+        keyword: keyword,
+        name: name
+      }
+    });
+  }
+  return ModuleKeyword;
 };

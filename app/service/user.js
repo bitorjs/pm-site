@@ -2,53 +2,65 @@
 import {
   Service
 } from 'bitorjs-decorators';
-import config from '../../config/app.config';
-import { User } from '../models';
+import Models from '../models';
 import DefaultUserService from './default_user_service';
+const { User } = Models;
+
+// if (!config.userService) {
+//   config.userService = new DefaultUserService();
+//   config.customUserService = false;
+// } else {
+//   config.customUserService = true;
+// }
+// config.scopes = config.scopes || [];
 
 
-if (!config.userService) {
-  config.userService = new DefaultUserService();
-  config.customUserService = false;
-} else {
-  config.customUserService = true;
-}
-config.scopes = config.scopes || [];
-
-function convertUser(user) {
-  if (!user) {
-    return null;
-  }
-  user.scopes = user.scopes || [];
-  if (user.scopes.length === 0 && config.scopes.length > 0) {
-    user.scopes = config.scopes.slice();
-  }
-  return user;
-}
 @Service('User')
 export default class {
+  constructor(ctx) {
+    if (!ctx.$config.userService) {
+      ctx.$config.userService = new DefaultUserService();
+      ctx.$config.customUserService = false;
+    } else {
+      ctx.$config.customUserService = true;
+    }
+    ctx.$config.scopes = ctx.$config.scopes || [];
+
+    this.convertUser = function (user) {
+      if (!user) {
+        return null;
+      }
+      user.scopes = user.scopes || [];
+      if (user.scopes.length === 0 && ctx.config.scopes.length > 0) {
+        user.scopes = ctx.config.scopes.slice();
+      }
+      return user;
+    }
+  }
+
   async auth(login, password) {
-    var user = await config.userService.auth(login, password);
-    return convertUser(user);
+    var user = await this.ctx.$config.userService.auth(login, password);
+    return this.convertUser(user);
   }
 
   async get(login) {
-    var user = await config.userService.get(login);
-    return convertUser(user);
+    var user = await this.ctx.$config.userService.get(login);
+    return this.convertUser(user);
   }
 
   async list(logins) {
-    var users = await config.userService.list(logins);
-    return users.map(convertUser);
+    var users = await this.ctx.$config.userService.list(logins);
+    return users.map(this.convertUser);
   }
 
   async search(query, options) {
-    var users = await config.userService.search(query, options);
-    return users.map(convertUser);
+    var users = await this.ctx.$config.userService.search(query, options);
+    return users.map(this.convertUser);
   }
 
   async getAndSave(login) {
-    if (config.customUserService) {
+    if (this.ctx.$config.customUserService) {
+      console.log('this', this)
       var user = await this.get(login);
       if (user) {
         var data = {
@@ -63,7 +75,7 @@ export default class {
   async authAndSave(login, password) {
     var user = await this.auth(login, password);
     if (user) {
-      if (config.customUserService) {
+      if (this.ctx.$config.customUserService) {
         // make sure sync user meta to cnpm database
         var data = {
           rev: Date.now() + '-' + user.login,

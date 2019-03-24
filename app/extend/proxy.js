@@ -2,18 +2,11 @@ import koaProxy from 'koa-proxies';
 
 export default app => {
   console.log('use proxy')
-  const logs = true;
   const proxy = {
-    '/proxy/style': {
-      target: 'http://mizhifa.com',
+    '/-/npm/v1/security/audits': {
+      target: 'https://registry.npmjs.org',
       changeOrigin: true,
-      pathRewrite: path => path.replace('/proxy/style', '/css/mfxy.css'),
-    },
-    '/proxy/login': {
-      target: 'http://mizhifa.com',
-      changeOrigin: true,
-      pathRewrite: path => path.replace('/proxy/login', '/css/mfxy.css'),
-    },
+    }
   }
 
   for (const key in proxy) {
@@ -22,9 +15,8 @@ export default app => {
       app.use(koaProxy(key, {
         target: item.target,
         changeOrigin: item.changeOrigin,
-        // agent: new httpsProxyAgent('http://1.2.3.4:88'), // if you need or just delete this line
         rewrite: item.pathRewrite,
-        logs: logs
+        logs: true
       }))
     }
   }

@@ -24,5 +24,5 @@ export default async (ctx, next) => {
     };
     return;
   }
-  next()
+  return await next()
 }

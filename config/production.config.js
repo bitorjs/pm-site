@@ -1,1 +1,1 @@
-export default app=>{}
+export default {}

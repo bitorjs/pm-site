@@ -4,9 +4,10 @@ import {
 
 import gravatar from 'gravatar';
 import config from '../../config/app.config';
-import { User } from '../models';
+import Models from '../models';
 import { isAdmin } from '../lib/common';
 
+const { User } = Models;
 
 @Service('DefaultUserService')
 export default class {

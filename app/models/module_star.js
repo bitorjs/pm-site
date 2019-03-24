@@ -39,7 +39,5 @@ module.exports = function (sequelize) {
           fields: ['name'],
         }
       ],
-      classMethods: {
-      }
     });
 };

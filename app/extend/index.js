@@ -12,38 +12,44 @@ import {
   getUploadFileName
 } from '../lib/index';
 
+import auth from '../middleware/auth';
+import decodepath from '../middleware/decode';
+import proxy_to_npm from '../middleware/proxy_to_npm';
+
 const cwd = process.cwd();
 export default app => {
-  app.use(views(path.join(__dirname, '../app/view'), {
-    extension: 'html',
-    map: {
-      html: 'nunjucks'
-    }
-  }))
 
-  app.use(koaHelmet());
+  // app.use(maxrequests());
+  // app.use(views(path.join(__dirname, '../app/view'), {
+  //   extension: 'html',
+  //   map: {
+  //     html: 'nunjucks'
+  //   }
+  // }))
+  app.use(auth);
+  // app.use(koaHelmet());
   app.use(koaCors({
-    origin: function (ctx) {
-      if (ctx.url === '/test') {
-        return false;
-      }
-      return '*';
-    },
-    exposeHeaders: ['WWW-Authenticate', 'Server-Authorization'],
-    maxAge: 5,
-    credentials: true,
-    allowMethods: ['GET', 'POST', 'DELETE'],
-    allowHeaders: ['Content-Type', 'Authorization', 'Accept'],
+    // origin: function (ctx) {
+    //   if (ctx.url === '/test') {
+    //     return false;
+    //   }
+    //   return '*';
+    // },
+    // exposeHeaders: ['WWW-Authenticate', 'Server-Authorization'],
+    // maxAge: 5,
+    // credentials: true,
+    allowMethods: ['GET,HEAD'],
+    // allowHeaders: ['Content-Type', 'Authorization', 'Accept'],
   }));
 
-  app.use(koaStatic(path.join(cwd, 'public')));
+  app.use(koaStatic(path.join(cwd, 'web')));
   app.use(koaBody({
     multipart: true, // 支持文件上传
     // encoding: 'gzip',
     // jsonStrict: false, // for json
     parsedMethods: ['POST', 'PUT', 'PATCH'],
     formidable: {
-      uploadDir: path.join(cwd, 'public/upload/'), // 设置文件上传目录
+      uploadDir: path.join(cwd, 'web/upload/'), // 设置文件上传目录
       keepExtensions: true, // 保持文件的后缀
       maxFieldsSize: 2 * 1024 * 1024, // 文件上传大小
       onFileBegin: (name, file) => { // 文件上传前的设置
@@ -53,7 +59,7 @@ export default app => {
         const ext = getUploadFileExt(file.name);
         // 最终要保存到的文件夹目录
         const dirName = getUploadDirName();
-        const dir = path.join(cwd, `public/upload/${dirName}`);
+        const dir = path.join(cwd, `web/upload/${dirName}`);
         // 检查文件夹是否存在如果不存在则新建文件夹
         checkDirExist(dir);
         // 获取文件名称
@@ -75,5 +81,7 @@ export default app => {
     threshold: 2048,
     flush: require('zlib').Z_SYNC_FLUSH
   }));
+  app.use(decodepath)
+  app.use(proxy_to_npm)
 
 }

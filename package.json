@@ -1,6 +1,6 @@
 {
-  "name": "pm-site",
-  "version": "1.0.0",
+  "name": "@cnpm/pm-site",
+  "version": "1.0.5",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -34,7 +34,6 @@
     "@babel/plugin-syntax-object-rest-spread": "^7.2.0",
     "@babel/plugin-transform-spread": "^7.2.2",
     "@babel/preset-env": "^7.3.1",
-    "@babel/register": "^7.0.0",
     "babel-loader": "^8.0.5",
     "clean-webpack-plugin": "^1.0.1",
     "open-browser-webpack-plugin": "0.0.5",
@@ -45,11 +44,16 @@
     "webpack-shell-plugin": "^0.5.0"
   },
   "dependencies": {
+    "agentkeepalive": "^4.0.2",
     "bitorjs-decorators": "^1.0.2",
+    "co-defer": "^1.0.0",
+    "co-gather": "^1.0.0",
+    "co-sleep": "0.0.1",
     "copy-to": "^2.0.1",
     "error-formater": "^1.0.3",
     "fs-cnpm": "^2.0.0",
     "gravatar": "^1.8.0",
+    "ioredis": "^4.6.2",
     "koa": "^2.7.0",
     "koa-body": "^4.1.0",
     "koa-compress": "^3.0.0",
@@ -65,11 +69,15 @@
     "mini-logger": "^1.1.3",
     "mysql2": "^1.6.5",
     "nodemailer": "^5.1.1",
+    "normalize-registry-metadata": "^1.1.2",
     "nunjucks": "^3.2.0",
     "pg-hstore": "^2.3.2",
     "qs": "^6.6.0",
     "redis": "^2.8.0",
     "sequelize": "^5.1.0",
+    "thunkify-wrap": "^1.0.4",
+    "tunnel-agent": "^0.6.0",
+    "urllib": "^2.33.1",
     "utility": "^1.15.1",
     "xss": "^1.0.3"
   }

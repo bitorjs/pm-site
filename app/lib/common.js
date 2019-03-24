@@ -1,10 +1,8 @@
-'use strict';
-
-var crypto = require('crypto');
-var path = require('path');
-var config = require('../../config/app.config');
-var util = require('util');
-var utility = require('utility');
+import crypto from 'crypto';
+import path from 'path';
+import config from '../../config/app.config';
+import util from 'util';
+import utility from 'utility';
 
 exports.ensurePasswordSalt = function (user, body) {
   if (!user.password_sha && body.password) {

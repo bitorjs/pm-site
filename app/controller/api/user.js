@@ -28,8 +28,9 @@ export default class {
     }
     var loginedUser;
     try {
-      loginedUser = await ctx.$service.user.authAndSave(body.name, body.password);
+      loginedUser = await ctx.$service.User.authAndSave(body.name, body.password);
     } catch (err) {
+      console.log(err)
       ctx.status = err.status || 500;
       ctx.body = {
         error: err.message,
@@ -79,7 +80,7 @@ export default class {
       return;
     }
 
-    var existUser = await ctx.$service.user.get(name);
+    var existUser = await ctx.$service.User.get(name);
     if (existUser) {
       ctx.status = 409;
       const error = '[conflict] User ' + name + ' already exists';
@@ -91,7 +92,7 @@ export default class {
     }
 
     // add new user
-    var result = await ctx.$service.user.add(user);
+    var result = await ctx.$service.User.add(user);
     ctx.etag = '"' + result.rev + '"';
     ctx.status = 201;
     ctx.body = {

@@ -253,9 +253,6 @@ module.exports = function (sequelize) {
         {
           fields: ['date'],
         }
-      ],
-      classMethods: {
-
-      }
+      ]
     });
 };

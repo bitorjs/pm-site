@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS `module_abbreviated` (
  */
 const Sequelize = require('sequelize');
 module.exports = function (sequelize) {
-  return sequelize.define('ModuleAbbreviated', {
+  const ModuleAbbreviated = sequelize.define('ModuleAbbreviated', {
     name: {
       type: Sequelize.STRING(214),
       allowNull: false,
@@ -50,12 +50,13 @@ module.exports = function (sequelize) {
           fields: ['publish_time'],
         },
       ],
-      classMethods: {
-        findByNameAndVersion: function* (name, version) {
-          return yield this.find({
-            where: { name: name, version: version }
-          });
-        }
-      }
     });
+
+  ModuleAbbreviated.findByNameAndVersion = async (name, version) => {
+    return await ModuleAbbreviated.findOne({
+      where: { name: name, version: version }
+    });
+  }
+
+  return ModuleAbbreviated;
 };

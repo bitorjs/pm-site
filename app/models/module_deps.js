@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS `module_deps` (
  */
 const Sequelize = require('sequelize');
 module.exports = function (sequelize) {
-  return sequelize.define('ModuleDependency', {
+  const ModuleDependency = sequelize.define('ModuleDependency', {
     name: {
       type: Sequelize.STRING(214),
       allowNull: false,
@@ -39,8 +39,8 @@ module.exports = function (sequelize) {
         {
           fields: ['deps'],
         }
-      ],
-      classMethods: {
-      }
+      ]
     });
+
+  return ModuleDependency;
 };

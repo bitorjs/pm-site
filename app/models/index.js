@@ -5,7 +5,7 @@ import sequelize from '../common/sequelize';
 var _ModuleAbbreviated = config.enableAbbreviatedMetadata ? require('./module_abbreviated')(sequelize) : null;
 var _PackageReadme = config.enableAbbreviatedMetadata ? require('./package_readme')(sequelize) : null;
 
-module.exports = {
+export default {
   sequelize: sequelize,
   Module: require('./module')(sequelize),
   ModuleLog: require('./module_log')(sequelize),

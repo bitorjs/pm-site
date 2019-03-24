@@ -1,4 +1,3 @@
-import config from '../../config/app.config';
 
 /**
  * Parse the request authorization
@@ -6,6 +5,7 @@ import config from '../../config/app.config';
  */
 
 export default async (ctx, next) => {
+
   ctx.user = {};
 
   var authorization = (ctx.get('authorization') || '').split(' ')[1] || '';
@@ -47,7 +47,7 @@ export default async (ctx, next) => {
 
 
 function unauthorized(ctx, next) {
-  if (!config.alwaysAuth || ctx.method !== 'GET') {
+  if (!ctx.$config.alwaysAuth || ctx.method !== 'GET') {
     return next();
   }
   ctx.status = 401;

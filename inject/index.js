@@ -23,6 +23,27 @@ export default class extends Koa {
 
   constructor() {
     super()
+    // this.context.jsonp = function (data) {
+    //   let callback = this.query['callback']
+
+    //   let contentType = 'application/json'
+
+    //   let response
+
+    //   if (this.method !== 'GET') {
+    //     return
+    //   }
+
+    //   if (!callback) {
+    //     return
+    //   }
+
+    //   response = `callback(${JSON.stringify(data)})`
+
+    //   this.type = contentType
+    //   this.body = response
+
+    // }
     console.info("App 应用实例化")
     this.context.$config = {}
     this.$config = this.context.$config;
@@ -39,15 +60,15 @@ export default class extends Koa {
         console.log(routes, this)
         let route = routes.path[0];
         if (route) {
-        //   request.params = route.params;
-          
-          if(urlParts[1]){
+          //   request.params = route.params;
+
+          if (urlParts[1]) {
             request.query = Object.assign(request.query, qs.parse(urlParts[1]))
           }
 
-          if(method === "get"){
+          if (method === "get") {
             request.query = Object.assign(request.query, params);
-          } else  {//if(method === "post")
+          } else {//if(method === "post")
             request.body = Object.assign(request.body, params);
           }
           return route.stack[0](this.context)
@@ -59,7 +80,7 @@ export default class extends Koa {
   }
 
   registerMiddleware(filename, middleware) {
-    if (_middlewares.has(filename)===false) {
+    if (_middlewares.has(filename) === false) {
       _middlewares.set(filename, middleware);
     } else {
       throw new Error(`Middleware [${filename}] has been declared`)
@@ -71,10 +92,11 @@ export default class extends Koa {
     instance.ctx = this.context;
     let name = decorators.getService(service);
     if (name) {
-      
+
       if (_services.has(name)) {
         throw new Error(`Service [${name}] has been declared`)
-      } else { 
+      } else {
+        console.log('注册服务', name, instance.auth)
         _services.set(name, service)
         this.context.$service = this.context.$service || {};
         this.context.$service[name] = instance;
@@ -83,6 +105,7 @@ export default class extends Koa {
       if (_services.has(filename)) {
         throw new Error(`Service [${filename}] has been declared`)
       } else {
+        console.log('注册服务', filename)
         _services.set(filename, service)
         this.context.$service = this.context.$service || {};
         this.context.$service[filename] = instance;
@@ -98,13 +121,13 @@ export default class extends Koa {
     let controllMiddlewares = decorators.getMiddleware(controller);
     controllMiddlewares = controllMiddlewares || [];
     controllMiddlewares.reverse();
-    
+
     const preMiddlewares = [];
     for (let index = 0; index < controllMiddlewares.length; index++) {
       let middleware = controllMiddlewares[index];
-      if(Object.prototype.toString.call(middleware)==="[object String]") {
-        
-        if(_middlewares.has(middleware)) preMiddlewares.push(_middlewares.get(middleware));
+      if (Object.prototype.toString.call(middleware) === "[object String]") {
+
+        if (_middlewares.has(middleware)) preMiddlewares.push(_middlewares.get(middleware));
       } else {
         // 直接注入中间件函数
         preMiddlewares.push(middleware)
@@ -121,16 +144,16 @@ export default class extends Koa {
         path = `${subroute.path}`
       }
       console.log(path)
-      let middlewares =decorators.getMiddleware(instance,subroute.prototype)
-      middlewares = middlewares ||[];
+      let middlewares = decorators.getMiddleware(instance, subroute.prototype)
+      middlewares = middlewares || [];
       middlewares.reverse();
 
-      if(middlewares.length>0||preMiddlewares.length>0) {
+      if (middlewares.length > 0 || preMiddlewares.length > 0) {
         let controllerMiddlewares = [].concat(preMiddlewares);
         for (let index = 0; index < middlewares.length; index++) {
           let middleware = middlewares[index];
-          if(Object.prototype.toString.call(middleware)==="[object String]") {
-            if(_middlewares.has(middleware)) controllerMiddlewares.push(_middlewares.get(middleware));
+          if (Object.prototype.toString.call(middleware) === "[object String]") {
+            if (_middlewares.has(middleware)) controllerMiddlewares.push(_middlewares.get(middleware));
           } else {
             // 直接注入中间件函数
             controllerMiddlewares.push(middleware)
@@ -206,10 +229,10 @@ export default class extends Koa {
     })
 
     console.info("注册所有实际请求服务")
-    if(this.$config && this.$config.mock !== true) {
+    if (this.$config && this.$config.mock !== true) {
       _serviceHashMap.forEach((m, filename) => {
-          this.registerService(filename, m)
-        })
+        this.registerService(filename, m)
+      })
     } else {
       _mockHashMap.forEach((m, filename) => {
         this.registerService(filename, m)

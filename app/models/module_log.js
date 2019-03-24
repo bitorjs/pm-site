@@ -16,7 +16,7 @@
  */
 const Sequelize = require('sequelize');
 module.exports = function (sequelize) {
-  return sequelize.define('ModuleLog', {
+  const ModuleLog = sequelize.define('ModuleLog', {
     username: {
       type: Sequelize.STRING(100),
       allowNull: false,
@@ -38,8 +38,9 @@ module.exports = function (sequelize) {
         {
           fields: ['name'],
         }
-      ],
-      classMethods: {
-      }
+      ]
     });
+
+
+  return ModuleLog;
 };

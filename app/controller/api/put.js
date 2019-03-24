@@ -7,19 +7,24 @@ import {
 @Controller('/')
 export default class {
 
-  // add module
+  // add module  
   @Put('/@:scope([\\w\\-\\.]+)/:name([\\w\\-\\.]+)')
   @Middleware('login')
+  @Middleware('publishable')
+  @Middleware('savePackage')
   async a(ctx, next) {
-    console.log('a')
+    console.log('a', ctx.url)
     console.log(ctx.params)
     ctx.body = '@'
     return 1;
   }
-  @Put('/:name')
+
+  @Put('/:name([\\w\\-\\.]+)')//
   @Middleware('login')
+  @Middleware('publishable')
+  @Middleware('savePackage')
   async b(ctx, next) {
-    console.log('b')
+    console.log('b', ctx.url)
     ctx.body = ctx.params.name;
     return 1;
   }
@@ -27,14 +32,18 @@ export default class {
   // add tag
   @Put('/@:scope([\\w\\-\\.]+)/:name([\\w\\-\\.]+)/:tag([\\w\\-\\.]+)')
   @Middleware('login')
+  @Middleware('editable')
+  @Middleware('tag')
   async c(ctx, next) {
     console.log('c')
     console.log(ctx.params)
     ctx.body = '@'
     return 1;
   }
-  @Put('/:name/:tag')
+  @Put('/:name([\\w\\-\\.]+)/:tag([\\w\\-\\.]+)')
   @Middleware('login')
+  @Middleware('editable')
+  @Middleware('tag')
   async d(ctx, next) {
     console.log('d')
     ctx.body = ctx.params.name;
@@ -44,13 +53,19 @@ export default class {
   // update module, unpublish will PUT this
   @Put('/@:scope([\\w\\-\\.]+)/:name([\\w\\-\\.]+)/-rev/:rev([\\w\\-\\.]+)')
   @Middleware('login')
+  @Middleware('publishable')
+  @Middleware('editable')
+  @Middleware('updatePackage')
   async e(ctx, next) {
     console.log('e')
     ctx.body = ctx.params.name;
     return 1;
   }
-  @Put('/:name/-rev/:rev')
+  @Put('/:name([\\w\\-\\.]+)/-rev/:rev([\\w\\-\\.]+)')
   @Middleware('login')
+  @Middleware('publishable')
+  @Middleware('editable')
+  @Middleware('updatePackage')
   async f(ctx, next) {
     console.log('f')
     ctx.body = ctx.params.name;

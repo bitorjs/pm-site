@@ -85,24 +85,26 @@ module.exports = function (sequelize) {
       comment: 'total info',
       createdAt: false,
       classMethods: {
-        init: function (callback) {
-          var that = Total;
-          that.find({
-            where: { name: 'total' }
-          }).then(function (row) {
-            if (!row) {
-              that.build({ name: 'total' }).save()
-                .then(function () {
-                  callback();
-                })
-                .catch(callback);
-              return;
-            }
-            callback();
-          }).catch(callback);
-        }
+
       }
     });
+
+  Total.init = async (callback) => {
+    var that = Total;
+    that.findOne({
+      where: { name: 'total' }
+    }).then(function (row) {
+      if (!row) {
+        that.build({ name: 'total' }).save()
+          .then(function () {
+            callback();
+          })
+          .catch(callback);
+        return;
+      }
+      callback();
+    }).catch(callback);
+  }
 
   return Total;
 };

@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS `module_unpublished` (
  */
 const Sequelize = require('sequelize');
 module.exports = function (sequelize) {
-  return sequelize.define('ModuleUnpublished', {
+  const ModuleUnpublished = sequelize.define('ModuleUnpublished', {
     name: {
       type: Sequelize.STRING(214),
       allowNull: false,
@@ -41,35 +41,38 @@ module.exports = function (sequelize) {
         {
           fields: ['gmt_modified'],
         }
-      ],
-      classMethods: {
-        findByName: function* (name) {
-          return yield this.find({
-            where: {
-              name: name
-            }
-          });
-        },
-        save: function* (name, pkg) {
-          var row = yield this.find({
-            where: {
-              name: name
-            }
-          });
-          if (row) {
-            row.package = pkg;
-            if (row.changed()) {
-              row = yield row.save(['package']);
-            }
-            return row;
-          }
+      ]
+    });
 
-          row = this.build({
-            name: name,
-            package: pkg,
-          });
-          return yield row.save();
-        }
+
+  ModuleUnpublished.findByName = async (name) => {
+    return await ModuleUnpublished.findOne({
+      where: {
+        name: name
       }
     });
+  }
+  ModuleUnpublished.save = async (name, pkg) => {
+    var row = await ModuleUnpublished.findOne({
+      where: {
+        name: name
+      }
+    });
+    if (row) {
+      row.package = pkg;
+      if (row.changed()) {
+        row = await row.save(['package']);
+      }
+      return row;
+    }
+
+    row = ModuleUnpublished.build({
+      name: name,
+      package: pkg,
+    });
+    return await row.save();
+  }
+
+
+  return ModuleUnpublished;
 };

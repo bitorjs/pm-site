@@ -87,15 +87,12 @@ module.exports = function (sequelize) {
         {
           fields: ['author'],
         }
-      ],
-      classMethods: {
-        findByNameAndVersion: function (name, version) {
-          return Module.find({
-            where: { name: name, version: version }
-          });
-        }
-      }
+      ]
     });
-
+  Module.findByNameAndVersion = async (name, version) => {
+    return await Module.findOne({
+      where: { name: name, version: version }
+    });
+  }
   return Module;
 };
