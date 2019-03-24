@@ -22,7 +22,6 @@ export default async (ctx, next) => {
   // and only can publish with scopes in `ctx.user.scopes`, default is `config.scopes`
 
   var name = ctx.params.name;
-  var scope = ctx.params.scope;
 
   // check if is private package list in config
   if (ctx.$config.privatePackages && ctx.$config.privatePackages.indexOf(name) !== -1) {
@@ -30,8 +29,8 @@ export default async (ctx, next) => {
   }
 
   // scoped module
-  if (scope) {
-    if (checkScope(scope, ctx)) {
+  if (name[0] === '@') {
+    if (checkScope(name, ctx)) {
       return await next();
     }
     return;
@@ -44,15 +43,15 @@ export default async (ctx, next) => {
  * check module's scope legal
  */
 
-function checkScope(scope, ctx) {
-  scope = `@${scope}`;
+function checkScope(name, ctx) {
   if (!ctx.user.scopes || !ctx.user.scopes.length) {
     ctx.status = 404;
     return false;
   }
 
+  var scope = name.split('/')[0];
   if (ctx.user.scopes.indexOf(scope) === -1) {
-    debug('assert scope  %s error', scope);
+    debug('assert scope  %s error', name);
     ctx.status = 400;
     const error = util.format('[invalid] scope %s not match legal scopes: %s', scope, ctx.user.scopes.join(', '));
     ctx.body = {

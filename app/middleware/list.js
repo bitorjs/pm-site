@@ -258,7 +258,7 @@ export default async (ctx, next) => {
     allVersionString,
   ]);
 
-  console.log('show module %s: %s, latest: %s', pkName, rev, latestMod.version)
+  debug('show module %s: %s, latest: %s', pkName, rev, latestMod.version)
 };
 
 const handleAbbreviatedMetaRequest = async (ctx, pkName, modifiedTime, tags, rows, cacheKey) => {

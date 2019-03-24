@@ -18,8 +18,8 @@ const test = async () => {
 export default async (ctx, next) => {
   var pkg = ctx.request.body;
   var username = ctx.user.name;
-  // var name = ctx.params.name;
-  var name = pkg.name;
+  var name = ctx.params.name;
+
   // var name = ctx.url.replace('/', '')
   var filename = Object.keys(pkg._attachments || {})[0];
   var version = Object.keys(pkg.versions || {})[0];

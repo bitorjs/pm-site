@@ -8,7 +8,7 @@ import {
 export default class {
 
   // uppublish all versions
-  @Delete('/@:scope([\\w\\-\\.]+)/:name([\\w\\-\\.]+)/-rev/:rev([\\w\\-\\.]+)')
+  @Delete('/:name(@?[\\w\\-\\.]+\/[\\w\\-\\.]+)/-rev/:rev')
   @Middleware('login')
   async a(ctx, next) {
     console.log('delete a')
@@ -17,15 +17,23 @@ export default class {
     return 1;
   }
 
-  @Delete('/:name/-rev/:rev')
+  // uppublish all versions
+  @Delete('/:name(@?[\\w\\-\\.]+\/[\\w\\-\\.]+)/download/:filename(.+)/-rev/:rev')
   @Middleware('login')
-  async b(ctx, next) {
-    console.log('delete b')
+  async c(ctx, next) {
+    console.log('delete c')
     console.log(ctx.params)
     ctx.body = '@'
     return 1;
   }
 
-
+  @Delete('/:name/download/:filename(.+)/-rev/:rev')
+  @Middleware('login')
+  async d(ctx, next) {
+    console.log('delete d')
+    console.log(ctx.params)
+    ctx.body = '@'
+    return 1;
+  }
 
 }
