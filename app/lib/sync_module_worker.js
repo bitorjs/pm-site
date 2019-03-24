@@ -1317,6 +1317,8 @@ export default class SyncModuleWorker extends EventEmitter {
     var filepath = common.getTarballFilepath(filename);
     var ws = fs.createWriteStream(filepath);
 
+    console.log(filename)
+
     var downloadOptions = {
       writeStream: ws,
       followRedirect: true,

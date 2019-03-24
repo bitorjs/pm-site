@@ -172,7 +172,6 @@ export default async (ctx, next) => {
     shasum: shasum
   };
   var uploadResult = await ctx.$config.nfs.uploadBuffer(tarballBuffer, options);
-  console.log('upload %j', uploadResult, options, name, filename)
   debug('upload %j', uploadResult);
 
   var dist = {

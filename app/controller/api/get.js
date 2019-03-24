@@ -41,13 +41,14 @@ export default class {
   @Middleware('syncByInstall')
   @Middleware('list')
   async e(ctx, next) {
-    console.log('get', 'e', ctx.params)
+    console.log('get e', ctx.params)
     ctx.body = {};
     return 1;
   }
-  @Get('/@:scope([\\w\\-\\.]+)/:name([\\w\\-\\.]+)/:version([^\/]+)')
+  @Get('/@:scope([\\w\\-\\.]+)/:name([\\w\\-\\.]+)/:version')//([^\/]+)
   async f(ctx, next) {
-    ctx.body = ctx.params.version;
+    console.log('get f', ctx.params)
+    // ctx.body = ctx.params.version;
     return 1;
   }
   @Get('/:name([\\w\\-\\.]+)')
@@ -60,18 +61,48 @@ export default class {
   }
   @Get('/:name([\\w\\-\\.]+)/:version([^\/]+)')
   async h(ctx, next) {
+    console.log('get h')
+    ctx.body = ctx.params.name;
+    return 1;
+  }
+
+  // need limit by ip
+  @Get('/:name(@.+)/download/:filename(.+)')
+  @Middleware('download')
+  async i(ctx, next) {
+    console.log('get i', ctx.params)
+    ctx.body = {};
+    return 1;
+  }
+  @Get('/:name(@.+)/-/:filename(.+)')
+  async j(ctx, next) {
+    console.log('get j', ctx.params)
+    // ctx.body = ctx.params.version;
+    return 1;
+  }
+  @Get('/:name([\\w\\-\\.]+)/download/:filename')
+  // @Middleware('syncByInstall')
+  // @Middleware('list')
+  async k(ctx, next) {
+    console.log('get k')
+    ctx.body = ctx.params.name;
+    return 1;
+  }
+  @Get('/:name([\\w\\-\\.]+)/-/:filename')
+  async l(ctx, next) {
+    console.log('get l')
     ctx.body = ctx.params.name;
     return 1;
   }
 
   // list all packages of user
   @Get('/-/by-user/:user')
-  async i(ctx, next) {
+  async m(ctx, next) {
     ctx.body = ctx.params.name;
     return 1;
   }
   @Get('/-/users/:user/packages')
-  async j(ctx, next) {
+  async n(ctx, next) {
     ctx.body = ctx.params.name;
     return 1;
   }

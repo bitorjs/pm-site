@@ -13,6 +13,8 @@ function etag(objs) {
 
 export default async (ctx, next) => {
   // const name = ctx.params.name || ctx.params[0];
+
+
   var scope = ctx.params.scope;
   var name = ctx.params.name;
   var pkName = scope ? `@${scope}/${name}` : name;
@@ -25,6 +27,8 @@ export default async (ctx, next) => {
       noCache = true;
     }
   }
+
+
   const isJSONPRequest = ctx.query.callback;
   let cacheKey;
   let needAbbreviatedMeta = false;
@@ -165,6 +169,7 @@ export default async (ctx, next) => {
     if (typeof pkg === 'string') {
       continue;
     }
+
     common.setDownloadURL(pkg, ctx);
     pkg._cnpm_publish_time = row.publish_time;
     pkg.publish_time = pkg.publish_time || row.publish_time;
@@ -212,8 +217,6 @@ export default async (ctx, next) => {
     distTags.latest = pkg.version;
   }
 
-  console.log('=======')
-
   if (!readme && ctx.$config.enableAbbreviatedMetadata) {
     var packageReadme = await ctx.$service.package.getPackageReadme(pkName);
     if (packageReadme) {
@@ -238,6 +241,7 @@ export default async (ctx, next) => {
   };
 
 
+
   info.readmeFilename = pkg.readmeFilename;
   info.homepage = pkg.homepage;
   info.bugs = pkg.bugs;
@@ -254,6 +258,7 @@ export default async (ctx, next) => {
     allVersionString,
   ]);
 
+  console.log('show module %s: %s, latest: %s', pkName, rev, latestMod.version)
 };
 
 const handleAbbreviatedMetaRequest = async (ctx, pkName, modifiedTime, tags, rows, cacheKey) => {
@@ -311,7 +316,8 @@ const handleAbbreviatedMetaRequest = async (ctx, pkName, modifiedTime, tags, row
   ]);
 
   if (isJSONPRequest) {
-    ctx.jsonp = info;
+    // ctx.jsonp = info;
+    ctx.body = info;
   } else {
     ctx.body = JSON.stringify(info);
     ctx.type = 'json';
@@ -396,7 +402,8 @@ const handleAbbreviatedMetaRequestWithFullMeta = (ctx, name, modifiedTime, tags,
   };
 
   debug('show %j', info);
-  ctx.jsonp = info;
+  // ctx.jsonp = info;
+  ctx.body = info;
   // use faster etag
   ctx.etag = etag([
     modifiedTime,

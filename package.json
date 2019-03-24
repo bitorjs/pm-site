@@ -4,9 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "start": "webpack --config ./build/webpack.dev.js --hot --watch --progress --color",
-    "dev": "NODE_ENV=development && supervisor --harmon ./dist/server.js",
+    "dev": "supervisor --harmon ./dist/server.js",
     "server": "node ./dist/server.js",
     "debug": "node --inspect-brk ./dist/server.js",
     "build": "webpack --config ./build/webpack.prod.js --progress --color",
@@ -54,6 +53,7 @@
     "fs-cnpm": "^2.0.0",
     "gravatar": "^1.8.0",
     "ioredis": "^4.6.2",
+    "is-type-of": "^1.2.1",
     "koa": "^2.7.0",
     "koa-body": "^4.1.0",
     "koa-compress": "^3.0.0",
