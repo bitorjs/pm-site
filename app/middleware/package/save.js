@@ -1,7 +1,7 @@
 var debug = require('debug')('cnpmjs.org:controllers:registry:package:save');
 var crypto = require('crypto');
 var deprecateVersions = require('./deprecate');
-var common = require('../lib/common');
+var common = require('../../lib/common');
 
 const addDepsRelations = async (pkg, ctx) => {
   var dependencies = Object.keys(pkg.dependencies || {});
@@ -11,18 +11,13 @@ const addDepsRelations = async (pkg, ctx) => {
   await ctx.$service.package.addDependencies(pkg.name, dependencies);
 }
 
-const test = async () => {
-  return {};
-}
-
 export default async (ctx, next) => {
   var pkg = ctx.request.body;
   var username = ctx.user.name;
-  var name = ctx.params.name;
-
-  // var name = ctx.url.replace('/', '')
+  var name = ctx.params.name || ctx.params[0];
   var filename = Object.keys(pkg._attachments || {})[0];
   var version = Object.keys(pkg.versions || {})[0];
+
   if (!version) {
     ctx.status = 400;
     const error = '[version_error] package.versions is empty';
@@ -31,6 +26,8 @@ export default async (ctx, next) => {
       reason: error,
     };
     return;
+  } else {
+    console.log(pkg)
   }
 
 
@@ -59,7 +56,7 @@ export default async (ctx, next) => {
       }
     }
     if (hasDeprecated) {
-      return await deprecateVersions.call(ctx, next);
+      return await deprecateVersions.call(null, ctx, next);
     }
 
     ctx.status = 400;

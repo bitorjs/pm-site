@@ -1,11 +1,10 @@
 var debug = require('debug')('cnpmjs.org:controllers:registry:package:show');
 var semver = require('semver');
 
-var setDownloadURL = require('../lib/common').setDownloadURL;
-var SyncModuleWorker = require('../lib/sync_module_worker');
+var setDownloadURL = require('../../lib/common').setDownloadURL;
+import SyncModuleWorker from '../../lib/sync_module_worker'
 
 export default async (ctx, next) => {
-  console.log('show one', ctx.params)
   var name = ctx.params.name || ctx.params[0];
   var tag = ctx.params.version || ctx.params[1];
   if (tag === '*') {

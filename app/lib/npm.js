@@ -1,7 +1,8 @@
 var ms = require('humanize-ms');
 var cleanNpmMetadata = require('normalize-registry-metadata');
 var urllib = require('../common/urllib');
-var config = require('../../config/app.config');
+
+const config = global.context.$config;
 
 var USER_AGENT = 'npm_service.cnpmjs.org/' + config.version + ' ' + urllib.USER_AGENT;
 

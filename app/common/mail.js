@@ -2,7 +2,7 @@ import os from 'os';
 import nodemailer from 'nodemailer';
 import utility from 'utility';
 
-import config from '../../config/app.config';
+const config = global.context.$config;
 
 const mailConfig = config.mail;
 var smtpConfig;

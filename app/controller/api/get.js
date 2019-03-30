@@ -9,14 +9,6 @@ import { User } from '../../models';
 @Controller('/')
 export default class {
 
-  @Get('/')
-  async a(ctx, next) {
-
-    console.log(User.findAll)
-
-    ctx.body = {};
-  }
-
   // before /:name/:version
   // get all modules, for npm search
   @Get('/-/all')
@@ -37,35 +29,52 @@ export default class {
 
   // install module
   // scope package: params: [$name]
-  @Get('/:name(@?[\\w\\-\\.]+\/[\\w\\-\\.]+)')
+  @Get('/:name(@[\\w\\-\\.]+\/[\\w\\-\\.]+)')
   @Middleware('syncByInstall')
   @Middleware('list')
-  async g(ctx, next) {
+  async install_with_scope(ctx, next) {
     console.log('get g')
     ctx.body = ctx.params.name;
     return 1;
   }
 
-  @Get('/:name(@?[\\w\\-\\.]+\/[\\w\\-\\.]+)/:version')//([^\/]+)
+  @Get('/:name([\\w\\-\\.]+)')//
+  @Middleware('syncByInstall')
+  @Middleware('list')
+  async install_without_scope(ctx, next) {
+    console.log('get g')
+    ctx.body = ctx.params.name;
+    return 1;
+  }
+
+  @Get('/:name(@[\\w\\-\\.]+\/[\\w\\-\\.]+)/:version([^\/]+)')//
+  @Middleware('syncByInstall')
+  @Middleware('show')
   async f(ctx, next) {
     console.log('get f', ctx.params)
-    // ctx.body = ctx.params.version;
+    return 1;
+  }
+  @Get('/:name([\\w\\-\\.]+)/:version([^\/]+)')// 
+  @Middleware('syncByInstall')
+  @Middleware('show')
+  async f2(ctx, next) {
+    console.log('get f', ctx.params)
     return 1;
   }
 
   // need limit by ip
-  @Get('/:name(@[\\w\\-\\.]+\/[\\w\\-\\.]+)/download/:filename(.+)')
+  @Get('/:name(@[\\w\\-\\.]+\/[\\w\\-\\.]+)/:d(download|\-)/:filename(.+)')
+  @Middleware('limit')
   @Middleware('download')
-  async i(ctx, next) {
+  async dowload_with_scope(ctx, next) {
     console.log('get i', ctx.params)
-    ctx.body = {};
     return 1;
   }
-
-  @Get('/:name(@?[\\w\\-\\.]+\/[\\w\\-\\.]+)/-/:filename(.+)')
-  async j(ctx, next) {
-    console.log('get j', ctx.params)
-    // ctx.body = ctx.params.version;
+  @Get('/:name([\\w\\-\\.]+)/:d(download|\-)/:filename(.+)')
+  @Middleware('limit')
+  @Middleware('download')
+  async dowload_without_scope(ctx, next) {
+    console.log('get i', ctx.params)
     return 1;
   }
 

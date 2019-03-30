@@ -1,7 +1,3 @@
-import {
-  Service
-} from 'bitorjs-decorators';
-
 import gravatar from 'gravatar';
 import config from '../../config/app.config';
 import Models from '../models';
@@ -9,7 +5,7 @@ import { isAdmin } from '../lib/common';
 
 const { User } = Models;
 
-@Service('DefaultUserService')
+
 export default class {
   /**
  * Auth user with login name and password
@@ -32,6 +28,7 @@ export default class {
    */
   async get(login) {
     var row = await User.findByName(login);
+    console.log(row)
     if (!row) {
       return null;
     }

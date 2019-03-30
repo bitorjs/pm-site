@@ -1,11 +1,11 @@
 var debug = require('debug')('cnpmjs.org:controllers:registry:package:list');
 var utility = require('utility');
 
-var SyncModuleWorker = require('../lib/sync_module_worker');
+var common = require('../../lib/common');
+const cache = require('../../common/cache');
+const logger = require('../../common/logger');
 
-var common = require('../lib/common');
-const cache = require('../common/cache');
-const logger = require('../common/logger');
+import SyncModuleWorker from '../../lib/sync_module_worker';
 
 function etag(objs) {
   return 'W/"' + utility.md5(JSON.stringify(objs)) + '"';

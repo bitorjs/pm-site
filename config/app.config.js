@@ -57,7 +57,7 @@ const config = {
   // config for koa-limit middleware
   // for limit download rates
   limit: {
-    enable: false,
+    enable: true,
     token: 'koa-limit:download',
     limit: 1000,
     interval: 1000 * 60 * 60 * 24,
@@ -71,7 +71,7 @@ const config = {
   // default system admins
   admins: {
     // name: email
-    huangzj: '773155801@qq.com',
+    bitores: '773155801@qq.com',
     admin: 'huangzhengjie@dingtalk.org',
   },
 
@@ -155,7 +155,7 @@ const config = {
   enablePrivate: false,
 
   // registry scopes, if don't set, means do not support scopes
-  scopes: ['@cnpm', '@cnpmtest', '@cnpm-test', '@bitores'],
+  scopes: ['@cnpm', '@cnpmtest', '@html', '@bitores', '@wwr'],
 
   // some registry already have some private packages in global scope
   // but we want to treat them as scoped private packages,
@@ -239,7 +239,7 @@ const config = {
   // custom user service, @see https://github.com/cnpm/cnpmjs.org/wiki/Use-Your-Own-User-Authorization
   // when you not intend to ingegrate with your company's user system, then use null, it would
   // use the default cnpm user system
-  userService: null,
+  userService: null,// default|github|other
 
   // always-auth https://docs.npmjs.com/misc/config#always-auth
   // Force npm to always require authentication when accessing the registry, even for GET requests.
@@ -261,52 +261,23 @@ const config = {
   globalHook: null,
 
   opensearch: {
-    host: '',
+    host: 'localhost:1029',
   },
 
   // redis cache
   redisCache: {
-    enable: false,
+    enable: true,
     connectOptions: null,
   },
+
+  logoURL: 'https://os.alipayobjects.com/rmsportal/oygxuIUkkrRccUz.jpg', // cnpm logo image url
+  adBanner: '',
+  customReadmeFile: '', // you can use your custom readme file instead the cnpm one
+  customFooter: '', // you can add copyright and site total script html here
+  npmClientName: 'cnpm', // use `${name} install package`
+  packagePageContributorSearch: true, // package page contributor link to search, default is true
 }
-
-
-// if (process.env.NODE_ENV === 'test') {
-//   config.enableAbbreviatedMetadata = true;
-//   config.customRegistryMiddlewares.push(() => {
-//     return function* (next) {
-//       this.set('x-custom-middleware', 'true');
-//       yield next;
-//     };
-//   });
-// }
-
-// if (process.env.NODE_ENV !== 'test') {
-//   var customConfig;
-//   if (process.env.NODE_ENV === 'development') {
-//     customConfig = path.join(root, 'config', 'config.js');
-//   } else {
-//     // 1. try to load `$dataDir/config.json` first, not exists then goto 2.
-//     // 2. load config/config.js, everything in config.js will cover the same key in index.js
-//     customConfig = path.join(dataDir, 'config.json');
-//     if (!fs.existsSync(customConfig)) {
-//       customConfig = path.join(root, 'config', 'config.js');
-//     }
-//   }
-//   if (fs.existsSync(customConfig)) {
-//     copy(require(customConfig)).override(config);
-//   }
-// }
 
 mkdirp.sync(config.logdir);
 mkdirp.sync(config.uploadDir);
-
-// config.loadConfig = function (customConfig) {
-//   if (!customConfig) {
-//     return;
-//   }
-//   copy(customConfig).override(config);
-// };
-
 export default config;

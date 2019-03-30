@@ -3,24 +3,18 @@ import {
   Service
 } from 'bitorjs-decorators';
 import Models from '../models';
-import DefaultUserService from './default_user_service';
 const { User } = Models;
-
-// if (!config.userService) {
-//   config.userService = new DefaultUserService();
-//   config.customUserService = false;
-// } else {
-//   config.customUserService = true;
-// }
-// config.scopes = config.scopes || [];
-
 
 @Service('User')
 export default class {
   constructor(ctx) {
-    if (!ctx.$config.userService) {
-      ctx.$config.userService = new DefaultUserService();
+    if (!ctx.$config.userService || ctx.$config.userService === 'default') {
+      ctx.$config.userService = ctx.$service.DefaultUserService;
       ctx.$config.customUserService = false;
+    } else if (ctx.$config.userService === 'github') {
+      ctx.$config.userService = ctx.$service.GithubUser;
+      ctx.$config.customUserService = false;
+      console
     } else {
       ctx.$config.customUserService = true;
     }
@@ -60,7 +54,6 @@ export default class {
 
   async getAndSave(login) {
     if (this.ctx.$config.customUserService) {
-      console.log('this', this)
       var user = await this.get(login);
       if (user) {
         var data = {

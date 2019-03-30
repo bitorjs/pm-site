@@ -1,8 +1,8 @@
 
 const debug = require('debug')('cnpmjs.org:cache');
-// const Redis = require('ioredis');
-import config from '../../config/app.config'
+const Redis = require('ioredis');
 
+const config = global.context.$config;
 let client = {};
 
 if (config.redisCache.enable) {

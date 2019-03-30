@@ -8,10 +8,6 @@ const CleanWebpackPlugin = require('clean-webpack-plugin');
 const cwd = process.cwd();
 
 // the path(s) that should be cleaned
-let pathsToClean = [
-  'dist'
-]
-
 // the clean options to use
 let cleanOptions = {
   root: cwd,
@@ -23,7 +19,7 @@ let cleanOptions = {
 module.exports = WebpackMerge(base, {
   mode: 'development',
   plugins: [
-    new CleanWebpackPlugin(pathsToClean, cleanOptions),
+    new CleanWebpackPlugin(cleanOptions),
     // new OpenBrowserPlugin({ url: 'http://localhost:1029' }),
     /* HMR plugin */
     new webpack.HotModuleReplacementPlugin(),

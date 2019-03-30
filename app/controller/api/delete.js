@@ -7,33 +7,40 @@ import {
 @Controller('/')
 export default class {
 
-  // uppublish all versions
-  @Delete('/:name(@?[\\w\\-\\.]+\/[\\w\\-\\.]+)/-rev/:rev')
+  // remove all versions
+  @Delete('/:name(@[\\w\\-\\.]+\/[\\w\\-\\.]+)/-rev/:rev')
   @Middleware('login')
-  async a(ctx, next) {
-    console.log('delete a')
-    console.log(ctx.params)
-    ctx.body = '@'
+  @Middleware('unpublishable')
+  @Middleware('remove')
+  async unpublish_lastone_with_scope(ctx, next) {
+    console.log('delete unpublish_lastone_with_scope')
     return 1;
   }
 
-  // uppublish all versions
-  @Delete('/:name(@?[\\w\\-\\.]+\/[\\w\\-\\.]+)/download/:filename(.+)/-rev/:rev')
+  @Delete('/:name([\\w\\-\\.]+)/-rev/:rev')
   @Middleware('login')
-  async c(ctx, next) {
-    console.log('delete c')
-    console.log(ctx.params)
-    ctx.body = '@'
+  @Middleware('unpublishable')
+  @Middleware('remove')
+  async unpublish_lastone_without_scope(ctx, next) {
+    console.log('delete unpublish_lastone_without_scope', ctx.params, ctx.url)
     return 1;
   }
 
-  @Delete('/:name/download/:filename(.+)/-rev/:rev')
+  // delete tarball and remove one version
+  @Delete('/:name(@[\\w\\-\\.]+\/[\\w\\-\\.]+)/download/:filename(.+)/-rev/:rev')
   @Middleware('login')
-  async d(ctx, next) {
-    console.log('delete d')
-    console.log(ctx.params)
-    ctx.body = '@'
+  @Middleware('unpublishable')
+  @Middleware('remove_version')
+  async unpublish_one_with_scope(ctx, next) {
+    console.log('delete unpublish_one_with_scope')
     return 1;
   }
-
+  @Delete('/:name([\\w\\-\\.]+)/download/:filename(.+)/-rev/:rev')
+  @Middleware('login')
+  @Middleware('unpublishable')
+  @Middleware('remove_version')
+  async unpublish_one_without_scope(ctx, next) {
+    console.log('delete unpublish_one_without_scope')
+    return 1;
+  }
 }

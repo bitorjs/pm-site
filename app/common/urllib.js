@@ -2,8 +2,8 @@ var urlparse = require('url').parse;
 var urllib = require('urllib');
 var HttpAgent = require('agentkeepalive');
 var HttpsAgent = require('agentkeepalive').HttpsAgent;
-var config = require('../../config/app.config');
 
+const config = global.context.$config;
 var httpAgent;
 var httpsAgent;
 

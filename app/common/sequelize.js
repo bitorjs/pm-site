@@ -1,9 +1,9 @@
 
 import Sequelize from 'sequelize';
-
-import config from '../../config/app.config';
-
 const Op = Sequelize.Op;
+const config = global.context.$config;
+
+
 const operatorsAliases = {
   $eq: Op.eq,
   $ne: Op.ne,

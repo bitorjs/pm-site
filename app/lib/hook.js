@@ -1,8 +1,9 @@
 'use strict';
 
 const co = require('co');
-const config = require('../../config/app.config');
 const logger = require('../common/logger');
+
+const config = global.context.$config;
 
 exports.trigger = envelope => {
   if (!config.globalHook) {

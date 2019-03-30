@@ -23,27 +23,8 @@ export default class extends Koa {
 
   constructor() {
     super()
-    // this.context.jsonp = function (data) {
-    //   let callback = this.query['callback']
-
-    //   let contentType = 'application/json'
-
-    //   let response
-
-    //   if (this.method !== 'GET') {
-    //     return
-    //   }
-
-    //   if (!callback) {
-    //     return
-    //   }
-
-    //   response = `callback(${JSON.stringify(data)})`
-
-    //   this.type = contentType
-    //   this.body = response
-
-    // }
+    console.log("挂载 App 至 global对象")
+    global.context = this.context;
     console.info("App 应用实例化")
     this.context.$config = {}
     this.$config = this.context.$config;
@@ -87,30 +68,51 @@ export default class extends Koa {
     }
   }
 
-  registerService(filename, service) {
-    const instance = new service(this.context);
-    instance.ctx = this.context;
-    let name = decorators.getService(service);
-    if (name) {
+  registerService(filename, allService) {
+    let serviceName = undefined;
+    const defaultService = allService.default;
+    if (defaultService) {
+      // console.log(allService, defaultService)
+      let instance;
+      try {
+        instance = new defaultService(this.context);
+      } catch (error) {
+        console.log(defaultService, error)
+      } finally {
+        // console.log(defaultService.constructor)
+      }
+      instance.ctx = this.context;
+      let name = decorators.getService(defaultService);
+      if (name) {
+        serviceName = name;
+        if (_services.has(serviceName)) {
+          throw new Error(`Service [${serviceName}] has been declared`)
+        }
+      } else {
+        serviceName = filename;
+        if (_services.has(serviceName)) {
+          throw new Error(`Service [${serviceName}] has been declared`)
+        } else {
+          console.warn('Service ', serviceName, 'use @Service(name)')
+        }
+      }
 
-      if (_services.has(name)) {
-        throw new Error(`Service [${name}] has been declared`)
-      } else {
-        console.log('注册服务', name, instance.auth)
-        _services.set(name, service)
-        this.context.$service = this.context.$service || {};
-        this.context.$service[name] = instance;
+      _services.set(serviceName, defaultService)
+      this.context.$service = this.context.$service || {};
+      this.context.$service[serviceName] = instance;
+    }
+
+    delete allService.default;
+    let extraServices = Object.keys(allService);
+    if (extraServices.length > 0) {
+      if (serviceName === undefined) {
+        this.context.$service[serviceName] = {};
       }
-    } else {
-      if (_services.has(filename)) {
-        throw new Error(`Service [${filename}] has been declared`)
-      } else {
-        console.log('注册服务', filename)
-        _services.set(filename, service)
-        this.context.$service = this.context.$service || {};
-        this.context.$service[filename] = instance;
-        console.warn('Service ', filename, 'use @Service(name)')
-      }
+      extraServices.forEach(key => {
+        let extraService = allService[key];
+        extraService.bind(this.context);
+        this.context.$service[serviceName][key] = extraService;
+      })
     }
   }
 
@@ -192,9 +194,11 @@ export default class extends Koa {
       } else if (key.match(/\/extend\/.*\.js$/)) {
         appExtends.push(m)
       } else if (key.match(/\/service\/.*\.js$/) != null) {
-        _serviceHashMap.set(filename, m)
+        const allService = requireContext(key);
+        _serviceHashMap.set(filename, allService)
       } else if (key.match(/\/mock\/.*\.js$/) != null) {
-        _mockHashMap.set(filename, m)
+        const allService = requireContext(key);
+        _mockHashMap.set(filename, allService)
       } else if (key.match(/\/plugin\.config\.js$/) != null) {
         m.forEach(item => {
           if (item.enable === true) _modules.push(item);
@@ -231,7 +235,7 @@ export default class extends Koa {
     console.info("注册所有实际请求服务")
     if (this.$config && this.$config.mock !== true) {
       _serviceHashMap.forEach((m, filename) => {
-        this.registerService(filename, m)
+        this.registerService(filename, m);
       })
     } else {
       _mockHashMap.forEach((m, filename) => {

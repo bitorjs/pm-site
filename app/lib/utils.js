@@ -7,15 +7,14 @@ var moment = require('moment');
 var rimraf = require('rimraf');
 
 // var downloadTotalService = require('../services/download_total');
-import config from '../../config/app.config';
-var nfs = config.nfs;
+const config = global.context.$config;
 
 var DOWNLOAD_TIMEOUT = ms('10m');
 
 export const downloadAsReadStream = async (key) => {
   var options = { timeout: DOWNLOAD_TIMEOUT };
-  if (nfs.createDownloadStream) {
-    return await nfs.createDownloadStream(key, options);
+  if (config.nfs.createDownloadStream) {
+    return await config.nfs.createDownloadStream(key, options);
   }
 
   var tmpPath = path.join(config.uploadDir,
@@ -30,7 +29,7 @@ export const downloadAsReadStream = async (key) => {
   }
   debug('downloadAsReadStream() %s to %s', key, tmpPath);
   try {
-    await nfs.download(key, tmpPath, options);
+    await config.nfs.download(key, tmpPath, options);
   } catch (err) {
     debug('downloadAsReadStream() %s to %s error: %s', key, tmpPath, err.stack);
     cleanup();

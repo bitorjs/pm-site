@@ -61,11 +61,8 @@ export default class {
   }
 
 
-
-
-
   async getModuleById(id) {
-    var row = await Module.findById(Number(id));
+    var row = await Module.findOne({ where: { id: Number(id) } });
     parseRow(row);
     return row;
   }
@@ -346,7 +343,7 @@ export default class {
   }
 
   async listModuleAbbreviatedsByName(name) {
-    if (!config.enableAbbreviatedMetadata) {
+    if (!this.ctx.$config.enableAbbreviatedMetadata) {
       return [];
     }
 
@@ -486,7 +483,7 @@ export default class {
 
   // try to return latest version readme
   async getPackageReadme(name, onlyPackageReadme) {
-    if (config.enableAbbreviatedMetadata) {
+    if (this.ctx.$config.enableAbbreviatedMetadata) {
       var row = await models.PackageReadme.findByName(name);
       if (row) {
         return {
@@ -526,7 +523,7 @@ export default class {
         name: name,
       },
     });
-    if (config.enableAbbreviatedMetadata) {
+    if (this.ctx.$config.enableAbbreviatedMetadata) {
       await models.ModuleAbbreviated.destroy({
         where: {
           name: name,
@@ -542,7 +539,7 @@ export default class {
         version: versions,
       }
     });
-    if (config.enableAbbreviatedMetadata) {
+    if (this.ctx.$config.enableAbbreviatedMetadata) {
       await models.ModuleAbbreviated.destroy({
         where: {
           name: name,

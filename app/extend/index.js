@@ -82,6 +82,6 @@ export default app => {
     flush: require('zlib').Z_SYNC_FLUSH
   }));
   app.use(decodepath)
-  app.use(proxy_to_npm)
+  // app.use(proxy_to_npm)
 
 }

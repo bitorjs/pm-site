@@ -1,9 +1,9 @@
 import crypto from 'crypto';
 import path from 'path';
-import config from '../../config/app.config';
 import util from 'util';
 import utility from 'utility';
 
+const config = global.context.$config;
 exports.ensurePasswordSalt = function (user, body) {
   if (!user.password_sha && body.password) {
     // create password_sha on server

@@ -3,8 +3,9 @@ import util from 'util';
 import utility from 'utility';
 import Logger from 'mini-logger';
 import formater from 'error-formater';
-import config from '../../config/app.config';
 import mail from './mail';
+
+const config = global.context.$config;
 
 const debug = require('debug')('cnpmjs.org:logger');
 

@@ -6,21 +6,19 @@ var utility = require('utility');
 var defer = require('co-defer');
 var is = require('is-type-of');
 
-var logger = require('../common/logger');
-var common = require('../lib/common');
-var downloadAsReadStream = require('../lib/utils').downloadAsReadStream;
+var logger = require('../../common/logger');
+var common = require('../../lib/common');
+var downloadAsReadStream = require('../../lib/utils').downloadAsReadStream;
 
 let globalDownloads = new Map();
 
 export default async (ctx, next) => {
-  wrap(ctx);
   var name = ctx.params.name || ctx.params[0];
   var filename = ctx.params.filename || ctx.params[1];
   var version = filename.slice(name.length + 1, -4);
   var row = await ctx.$service.package.getModule(name, version);
   // can not get dist
   var url = null;
-  console.log(row)
   var query = ctx.query || {};
   // allow download from specific store bucket
   var options = query.bucket ? { bucket: query.bucket } : null;
@@ -78,49 +76,50 @@ export default async (ctx, next) => {
   ctx.body = res;
 };
 var saving = false;
-function wrap(ctx) {
 
-  defer.setInterval(async () => {
-    if (saving) {
-      return;
+
+defer.setInterval(async () => {
+  const ctx = global.context;
+  if (saving) {
+    return;
+  }
+
+  // save download count
+  var totals = [];
+  var allCount = 0;
+  for (const [name, count] of globalDownloads) {
+    if (name !== '__all__') {
+      totals.push([name, count]);
     }
+    allCount += count;
+  }
+  globalDownloads = new Map();
 
-    // save download count
-    var totals = [];
-    var allCount = 0;
-    for (const [name, count] of globalDownloads) {
-      if (name !== '__all__') {
-        totals.push([name, count]);
+  if (allCount === 0) {
+    return;
+  }
+
+  saving = true;
+  totals.push(['__all__', allCount]);
+  debug('save download total: %j', totals);
+
+  var date = utility.YYYYMMDD();
+  for (var i = 0; i < totals.length; i++) {
+    var item = totals[i];
+    var name = item[0];
+    var count = item[1];
+    try {
+      await ctx.$service.downloadTotal.plusModuleTotal({ name: name, date: date, count: count });
+    } catch (err) {
+      if (err.name !== 'SequelizeUniqueConstraintError') {
+        err.message += '; name: ' + name + ', count: ' + count + ', date: ' + date;
+        logger.error(err);
       }
-      allCount += count;
+      // save back to globalDownloads, try again next time
+      count = (globalDownloads.get(name) || 0) + count;
+      globalDownloads.set(name, count);
     }
-    globalDownloads = new Map();
+  }
+  saving = false;
+}, 5000 + Math.ceil(Math.random() * 1000));
 
-    if (allCount === 0) {
-      return;
-    }
-
-    saving = true;
-    totals.push(['__all__', allCount]);
-    debug('save download total: %j', totals);
-
-    var date = utility.YYYYMMDD();
-    for (var i = 0; i < totals.length; i++) {
-      var item = totals[i];
-      var name = item[0];
-      var count = item[1];
-      try {
-        await ctx.$service.downloadTotal.plusModuleTotal({ name: name, date: date, count: count });
-      } catch (err) {
-        if (err.name !== 'SequelizeUniqueConstraintError') {
-          err.message += '; name: ' + name + ', count: ' + count + ', date: ' + date;
-          logger.error(err);
-        }
-        // save back to globalDownloads, try again next time
-        count = (globalDownloads.get(name) || 0) + count;
-        globalDownloads.set(name, count);
-      }
-    }
-    saving = false;
-  }, 5000 + Math.ceil(Math.random() * 1000));
-}

@@ -14,21 +14,20 @@ var utility = require('utility');
 var urlparse = require('url').parse;
 var os = require('os');
 
-var config = require('../../config/app.config');
 var urllib = require('../common/urllib');
 var logger = require('../common/logger');
 const cache = require('../common/cache');
 var common = require('../lib/common');
 
 var npmSerivce = require('./npm');
-
-var logService = require('./module_log');
-var downloadTotalService = require('../lib/download_total');
 var hook = require('../lib/hook');
-var User = require('../models').User;
-var packageService = require('../service/package');
 
-var nfs = config.nfs;
+import modles from '../models';
+var User = modles.User;
+
+const ctx = global.context;
+const config = ctx.$config;
+
 
 var USER_AGENT = 'sync.cnpmjs.org/' + config.version +
   ' hostname/' + os.hostname() +
@@ -41,7 +40,7 @@ var MAX_LEN = 10 * 1024;
 
 
 const _listStarUsers = async (modName) => {
-  var users = await packageService.listStarUserNames(modName);
+  var users = await ctx.$service.package.listStarUserNames(modName);
   var userMap = {};
   users.forEach(function (user) {
     userMap[user] = true;
@@ -70,9 +69,9 @@ const _saveNpmUser = async (username) => {
 
 const _saveMaintainer = async (modName, username, action) => {
   if (action === 'add') {
-    await packageService.addPublicModuleMaintainer(modName, username);
+    await ctx.$service.package.addPublicModuleMaintainer(modName, username);
   } else if (action === 'remove') {
-    await packageService.removePublicModuleMaintainer(modName, username);
+    await ctx.$service.package.removePublicModuleMaintainer(modName, username);
   }
 }
 
@@ -157,7 +156,7 @@ export default class SyncModuleWorker extends EventEmitter {
     }
 
     co(async () => {
-      await logService.append(that._logId, logstr);
+      await ctx.$service.module_log.append(that._logId, logstr);
     }).then(function () {
       that._loging = false;
       if (that._log) {
@@ -228,6 +227,7 @@ export default class SyncModuleWorker extends EventEmitter {
   }
 
   async _doneOne(concurrencyId, name, success) {
+    console.log("_doneOne")
     // clean cache
     if (cache) {
       const cacheKey = `list-${name}-v1`;
@@ -342,6 +342,7 @@ export default class SyncModuleWorker extends EventEmitter {
   }
 
   async next(concurrencyId) {
+    console.log('next')
     var name = this.names.shift();
     if (!name) {
       return setImmediate(this.finish.bind(this));
@@ -360,6 +361,7 @@ export default class SyncModuleWorker extends EventEmitter {
   }
 
   async syncByName(concurrencyId, name, registry) {
+    console.log('##')
     var that = this;
     that.syncingNames[name] = true;
     var pkg = null;
@@ -524,7 +526,7 @@ export default class SyncModuleWorker extends EventEmitter {
   }
 
   async _unpublished(name, unpublishedInfo) {
-    var mods = await packageService.listModulesByName(name);
+    var mods = await ctx.$service.package.listModulesByName(name);
     this.log('  [%s] start unpublished %d versions from local cnpm registry',
       name, mods.length);
     if (common.isLocalModule(mods)) {
@@ -533,7 +535,7 @@ export default class SyncModuleWorker extends EventEmitter {
       return [];
     }
     if (!config.syncDeletedVersions) {
-      const downloadCount = await downloadTotalService.getTotalByName(name);
+      const downloadCount = await ctx.$service.downloadTotal.getTotalByName(name);
       if (downloadCount >= 10000) {
         this.log('  [%s] total downloads %s >= 10000 and `config.syncDeletedVersions=false`, don\'t sync unpublished info', name, downloadCount);
         return [];
@@ -541,16 +543,16 @@ export default class SyncModuleWorker extends EventEmitter {
       this.log('  [%s] total downloads %s < 10000 and `config.syncDeletedVersions=false`, still need to sync unpublished info', name, downloadCount);
     }
 
-    var r = await packageService.saveUnpublishedModule(name, unpublishedInfo);
+    var r = await ctx.$service.package.saveUnpublishedModule(name, unpublishedInfo);
     this.log('    [%s] save unpublished info: %j to row#%s',
       name, unpublishedInfo, r.id);
     if (mods.length === 0) {
       return;
     }
-    await [
-      packageService.removeModulesByName(name),
-      packageService.removeModuleTags(name),
-    ];
+
+    await ctx.$service.package.removeModulesByName(name)
+    await ctx.$service.package.removeModuleTags(name)
+
     var keys = [];
     for (var i = 0; i < mods.length; i++) {
       var row = mods[i];
@@ -565,7 +567,7 @@ export default class SyncModuleWorker extends EventEmitter {
     if (keys.length > 0) {
       try {
         await keys.map(function (key) {
-          return nfs.remove(key);
+          return config.nfs.remove(key);
         });
       } catch (err) {
         // ignore error here
@@ -579,18 +581,13 @@ export default class SyncModuleWorker extends EventEmitter {
   async _sync(name, pkg) {
     var that = this;
     var hasModules = false;
-    var result = await [
-      packageService.listModulesByName(name),
-      packageService.listModuleTags(name),
-      _listStarUsers(name),
-      packageService.listPublicModuleMaintainers(name),
-      packageService.listModuleAbbreviatedsByName(name),
-    ];
-    var moduleRows = result[0];
-    var tagRows = result[1];
-    var existsStarUsers = result[2];
-    var existsNpmMaintainers = result[3];
-    var existsModuleAbbreviateds = result[4];
+
+    var moduleRows = await ctx.$service.package.listModulesByName(name)
+    var tagRows = await ctx.$service.package.listModuleTags(name)
+    var existsStarUsers = await _listStarUsers(name)
+    var existsNpmMaintainers = await ctx.$service.package.listPublicModuleMaintainers(name)
+    var existsModuleAbbreviateds = await ctx.$service.package.listModuleAbbreviatedsByName(name)
+
 
     if (common.isLocalModule(moduleRows)) {
       // publish on cnpm, dont sync this version package
@@ -960,12 +957,12 @@ export default class SyncModuleWorker extends EventEmitter {
         that.log('  [%s] %d versions: %j need to deleted, because config.syncDeletedVersions=true',
           name, deletedVersionNames.length, deletedVersionNames);
         try {
-          await packageService.removeModulesByNameAndVersions(name, deletedVersionNames);
+          await ctx.$service.package.removeModulesByNameAndVersions(name, deletedVersionNames);
         } catch (err) {
           that.log('    [%s] delete error, %s: %s', name, err.name, err.message);
         }
       } else {
-        const downloadCount = await downloadTotalService.getTotalByName(name);
+        const downloadCount = await ctx.$service.downloadTotal.getTotalByName(name);
         if (downloadCount >= 10000) {
           // find deleted in 24 hours versions
           var oneDay = 3600000 * 24;
@@ -985,7 +982,7 @@ export default class SyncModuleWorker extends EventEmitter {
             that.log('  [%s] %d versions: %j need to deleted, because they are deleted in 24 hours',
               name, deletedIn24HoursVersions.length, deletedIn24HoursVersions);
             try {
-              await packageService.removeModulesByNameAndVersions(name, deletedIn24HoursVersions);
+              await ctx.$service.package.removeModulesByNameAndVersions(name, deletedIn24HoursVersions);
             } catch (err) {
               that.log('    [%s] delete error, %s: %s', name, err.name, err.message);
             }
@@ -996,7 +993,7 @@ export default class SyncModuleWorker extends EventEmitter {
           that.log('  [%s] %d versions: %j need to deleted, because downloads %s < 10000',
             name, deletedVersionNames.length, deletedVersionNames, downloadCount);
           try {
-            await packageService.removeModulesByNameAndVersions(name, deletedVersionNames);
+            await ctx.$service.package.removeModulesByNameAndVersions(name, deletedVersionNames);
           } catch (err) {
             that.log('    [%s] delete error, %s: %s', name, err.name, err.message);
           }
@@ -1011,7 +1008,7 @@ export default class SyncModuleWorker extends EventEmitter {
       }
       that.log('  [%s] saving %d descriptions', name, missingDescriptions.length);
       var res = await gather(missingDescriptions.map(function (item) {
-        return packageService.updateModuleDescription(item.id, item.description);
+        return ctx.$service.package.updateModuleDescription(item.id, item.description);
       }));
 
       for (var i = 0; i < res.length; i++) {
@@ -1030,7 +1027,7 @@ export default class SyncModuleWorker extends EventEmitter {
     // sync missing tags
     const syncTag = async () => {
       if (deletedTags.length > 0) {
-        await packageService.removeModuleTagsByNames(name, deletedTags);
+        await ctx.$service.package.removeModuleTagsByNames(name, deletedTags);
         that.log('  [%s] deleted %d tags: %j',
           name, deletedTags.length, deletedTags);
       }
@@ -1041,7 +1038,7 @@ export default class SyncModuleWorker extends EventEmitter {
       that.log('  [%s] adding %d tags', name, missingTags.length);
       // sync tags
       var res = await gather(missingTags.map(function (item) {
-        return packageService.addModuleTag(name, item[0], item[1]);
+        return ctx.$service.package.addModuleTag(name, item[0], item[1]);
       }));
 
       for (var i = 0; i < res.length; i++) {
@@ -1065,7 +1062,7 @@ export default class SyncModuleWorker extends EventEmitter {
       that.log('  [%s] saving %d readmes', name, missingReadmes.length);
 
       var res = await gather(missingReadmes.map(function (item) {
-        return packageService.updateModuleReadme(item.id, item.readme);
+        return ctx.$service.package.updateModuleReadme(item.id, item.readme);
       }));
 
       for (var i = 0; i < res.length; i++) {
@@ -1086,7 +1083,7 @@ export default class SyncModuleWorker extends EventEmitter {
       that.log('  [%s] saving %d missing moduleAbbreviateds', name, missingModuleAbbreviateds.length);
 
       var res = await gather(missingModuleAbbreviateds.map(function (item) {
-        return packageService.saveModuleAbbreviated(item);
+        return ctx.$service.package.saveModuleAbbreviated(item);
       }));
 
       for (var i = 0; i < res.length; i++) {
@@ -1107,7 +1104,7 @@ export default class SyncModuleWorker extends EventEmitter {
       that.log('  [%s] saving %d abbreviated meta datas', name, missingAbbreviatedMetadatas.length);
 
       var res = await gather(missingAbbreviatedMetadatas.map(function (item) {
-        return packageService.updateModuleAbbreviatedPackage(item);
+        return ctx.$service.package.updateModuleAbbreviatedPackage(item);
       }));
 
       for (var i = 0; i < res.length; i++) {
@@ -1129,7 +1126,7 @@ export default class SyncModuleWorker extends EventEmitter {
           }
           fields[key] = item[key];
         }
-        return packageService.updateModulePackageFields(item.id, fields);
+        return ctx.$service.package.updateModulePackageFields(item.id, fields);
       }));
 
       for (var i = 0; i < res.length; i++) {
@@ -1151,7 +1148,7 @@ export default class SyncModuleWorker extends EventEmitter {
         name, missingDeprecatedsOnExistsModuleAbbreviated.length);
 
       var res = await gather(missingDeprecatedsOnExistsModuleAbbreviated.map(function (item) {
-        return packageService.updateModuleAbbreviatedPackage(item);
+        return ctx.$service.package.updateModuleAbbreviatedPackage(item);
       }));
 
       for (var i = 0; i < res.length; i++) {
@@ -1172,7 +1169,7 @@ export default class SyncModuleWorker extends EventEmitter {
       that.log('  [%s] saving %d Deprecated fields', name, missingDeprecateds.length);
 
       var res = await gather(missingDeprecateds.map(function (item) {
-        return packageService.updateModulePackageFields(item.id, {
+        return ctx.$service.package.updateModulePackageFields(item.id, {
           deprecated: item.deprecated
         });
       }));
@@ -1235,7 +1232,7 @@ export default class SyncModuleWorker extends EventEmitter {
 
       that.log('  [%s] saving %d star users', name, missingStarUsers.length);
       var res = await gather(missingStarUsers.map(function (username) {
-        return packageService.addStar(name, username);
+        return ctx.$service.package.addStar(name, username);
       }));
 
       for (var i = 0; i < res.length; i++) {
@@ -1267,11 +1264,11 @@ export default class SyncModuleWorker extends EventEmitter {
     }
 
     if (latestVersionPackageReadme.version && latestVersionPackageReadme.readme) {
-      var existsPackageReadme = await packageService.getPackageReadme(name, true);
+      var existsPackageReadme = await ctx.$service.package.getPackageReadme(name, true);
       if (!existsPackageReadme ||
         existsPackageReadme.version !== latestVersionPackageReadme.version ||
         existsPackageReadme.readme !== latestVersionPackageReadme.readme) {
-        var r = await packageService.savePackageReadme(name, latestVersionPackageReadme.readme, latestVersionPackageReadme.version);
+        var r = await ctx.$service.package.savePackageReadme(name, latestVersionPackageReadme.readme, latestVersionPackageReadme.version);
         that.log('    save packageReadme: %s %s %s', r.id, r.name, r.version);
       }
     }
@@ -1306,6 +1303,67 @@ export default class SyncModuleWorker extends EventEmitter {
   }
 
   async _syncOneVersion(versionIndex, sourcePackage) {
+    const afterUpload = async (result) => {
+      //make sure sync module have the correct author info
+      //only if can not get maintainers, use the username
+      var author = username;
+      if (Array.isArray(sourcePackage.maintainers) && sourcePackage.maintainers.length > 0) {
+        author = sourcePackage.maintainers[0].name || username;
+      } else if (sourcePackage._npmUser && sourcePackage._npmUser.name) {
+        // try to use _npmUser instead
+        author = sourcePackage._npmUser.name;
+        sourcePackage.maintainers = [sourcePackage._npmUser];
+      }
+
+      var mod = {
+        version: sourcePackage.version,
+        name: sourcePackage.name,
+        package: sourcePackage,
+        author: author,
+        publish_time: sourcePackage.publish_time,
+      };
+
+      // delete _publish_on_cnpm, because other cnpm maybe sync from current cnpm
+      delete mod.package._publish_on_cnpm;
+      if (that._publish) {
+        // sync as publish
+        mod.package._publish_on_cnpm = true;
+      }
+
+      var dist = {
+        shasum: shasum,
+        size: dataSize,
+        noattachment: dataSize === 0,
+      };
+
+      if (result.url) {
+        dist.tarball = result.url;
+      } else if (result.key) {
+        dist.key = result.key;
+        dist.tarball = result.key;
+      }
+
+      mod.package.dist = dist;
+      var r = await ctx.$service.package.saveModule(mod);
+      var moduleAbbreviatedId = null;
+      if (config.enableAbbreviatedMetadata) {
+        var moduleAbbreviatedResult = await ctx.$service.package.saveModuleAbbreviated(mod);
+        moduleAbbreviatedId = moduleAbbreviatedResult.id;
+      }
+
+      that.log('    [%s:%s] done, insertId: %s, author: %s, version: %s, '
+        + 'size: %d, publish_time: %j, publish on cnpm: %s, '
+        + 'moduleAbbreviatedId: %s',
+        sourcePackage.name, versionIndex,
+        r.id,
+        author, mod.version, dataSize,
+        new Date(mod.publish_time),
+        that._publish,
+        moduleAbbreviatedId);
+
+      return r;
+    }
+
     var delay = Date.now() - sourcePackage.publish_time;
     logger.syncInfo('[sync_module_worker] delay: %s ms, publish_time: %s, start sync %s@%s',
       delay, utility.logDate(new Date(sourcePackage.publish_time)),
@@ -1316,8 +1374,6 @@ export default class SyncModuleWorker extends EventEmitter {
     var filename = path.basename(downurl);
     var filepath = common.getTarballFilepath(filename);
     var ws = fs.createWriteStream(filepath);
-
-    console.log(filename)
 
     var downloadOptions = {
       writeStream: ws,
@@ -1366,7 +1422,7 @@ export default class SyncModuleWorker extends EventEmitter {
     }
 
     // add module dependence
-    await packageService.addDependencies(sourcePackage.name, dependencies);
+    await ctx.$service.package.addDependencies(sourcePackage.name, dependencies);
 
     var shasum = crypto.createHash('sha1');
     var dataSize = 0;
@@ -1437,7 +1493,7 @@ export default class SyncModuleWorker extends EventEmitter {
       logger.syncInfo('[sync_module_worker] uploading %j to nfs', uploadOptions);
       var result;
       try {
-        result = await nfs.upload(filepath, uploadOptions);
+        result = await config.nfs.upload(filepath, uploadOptions);
       } catch (err) {
         logger.syncInfo('[sync_module_worker] upload %j to nfs error: %s', err);
         throw err;
@@ -1452,73 +1508,14 @@ export default class SyncModuleWorker extends EventEmitter {
       fs.unlink(filepath, utility.noop);
     }
 
-    const afterUpload = async (result) => {
-      //make sure sync module have the correct author info
-      //only if can not get maintainers, use the username
-      var author = username;
-      if (Array.isArray(sourcePackage.maintainers) && sourcePackage.maintainers.length > 0) {
-        author = sourcePackage.maintainers[0].name || username;
-      } else if (sourcePackage._npmUser && sourcePackage._npmUser.name) {
-        // try to use _npmUser instead
-        author = sourcePackage._npmUser.name;
-        sourcePackage.maintainers = [sourcePackage._npmUser];
-      }
 
-      var mod = {
-        version: sourcePackage.version,
-        name: sourcePackage.name,
-        package: sourcePackage,
-        author: author,
-        publish_time: sourcePackage.publish_time,
-      };
-
-      // delete _publish_on_cnpm, because other cnpm maybe sync from current cnpm
-      delete mod.package._publish_on_cnpm;
-      if (that._publish) {
-        // sync as publish
-        mod.package._publish_on_cnpm = true;
-      }
-
-      var dist = {
-        shasum: shasum,
-        size: dataSize,
-        noattachment: dataSize === 0,
-      };
-
-      if (result.url) {
-        dist.tarball = result.url;
-      } else if (result.key) {
-        dist.key = result.key;
-        dist.tarball = result.key;
-      }
-
-      mod.package.dist = dist;
-      var r = await packageService.saveModule(mod);
-      var moduleAbbreviatedId = null;
-      if (config.enableAbbreviatedMetadata) {
-        var moduleAbbreviatedResult = await packageService.saveModuleAbbreviated(mod);
-        moduleAbbreviatedId = moduleAbbreviatedResult.id;
-      }
-
-      that.log('    [%s:%s] done, insertId: %s, author: %s, version: %s, '
-        + 'size: %d, publish_time: %j, publish on cnpm: %s, '
-        + 'moduleAbbreviatedId: %s',
-        sourcePackage.name, versionIndex,
-        r.id,
-        author, mod.version, dataSize,
-        new Date(mod.publish_time),
-        that._publish,
-        moduleAbbreviatedId);
-
-      return r;
-    }
   }
 
 }
 
 SyncModuleWorker.sync = async (name, username, options) => {
   options = options || {};
-  var result = await logService.create({ name: name, username: username });
+  var result = await ctx.$service.module_log.create({ name: name, username: username });
   var worker = new SyncModuleWorker({
     logId: result.id,
     type: options.type,
@@ -1528,6 +1525,7 @@ SyncModuleWorker.sync = async (name, username, options) => {
     publish: options.publish,
     syncUpstreamFirst: options.syncUpstreamFirst,
   });
+
   worker.start();
   return result.id;
 }
