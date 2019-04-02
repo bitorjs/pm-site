@@ -1,6 +1,6 @@
 {
-  "name": "@bitores/ui-axios",
-  "version": "1.0.2",
+  "name": "@html/axios",
+  "version": "1.0.4",
   "description": "",
   "main": "index.js",
   "scripts": {

@@ -10,7 +10,7 @@ const nodeModules = {
   // tedious: 'tedious',
   // pg_hstore: 'pg-hstore'
   // 'sequelize': "require('sequelize')",
-  "sequelize": "sequelize",
+  "sequelize": "sequelize"
 };
 
 fs.readdirSync('node_modules')

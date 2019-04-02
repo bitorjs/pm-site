@@ -22,7 +22,7 @@ let cleanOptions = {
 module.exports = WebpackMerge(base, {
   mode: 'production',
   plugins: [
-    new CleanWebpackPlugin(pathsToClean, cleanOptions),
+    new CleanWebpackPlugin(cleanOptions),
     new WebpackShellPlugin({
       onBuildEnd: [
         `npm run server`
