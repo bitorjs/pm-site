@@ -28,9 +28,9 @@ export default class {
 
   // add tag
   @Put('/:name(@[\\w\\-\\.]+\/[\\w\\-\\.]+)/:tag([\\w\\-\\.]+)')
-  // @Middleware('login')
-  // @Middleware('editable')
-  // @Middleware('tag')
+  @Middleware('login')
+  @Middleware('editable')
+  @Middleware('tag')
   async c(ctx, next) {
     console.log('c')
     console.log(ctx.params)

@@ -1,4 +1,4 @@
-export default {
+module.exports = {
   enableAbbreviatedMetadata: true,
   customRegistryMiddlewares: [
     async (ctx, next) => {

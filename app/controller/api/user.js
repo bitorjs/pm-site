@@ -6,8 +6,43 @@ import {
   Middleware
 } from 'bitorjs-decorators';
 
+var co = require('co');
+var utility = require('utility');
+
+import models from '../../models';
+var UserModel = models.User;
+
+
 @Controller('/')
 export default class {
+
+  // curl -d "username=bitores&passwordhttp://localhost:1029/-/v1/change_passwd
+  @Post('/-/v1/change_passwd')
+  async post_change_pwd(ctx, next) {
+    console.log('change_passwd ', ctx.request.body)
+    const body = ctx.request.body;
+    var user = await UserModel.findOne({ where: { name: body.username } });
+    var salt = user.salt;
+    console.log(`user original password_sha: ${user.password_sha}`);
+    var newPasswordSha = utility.sha1(body.password + salt);
+    user.password_sha = newPasswordSha;
+    user = await user.save();
+    console.log(`change user password successful!! user new password_sha: ${user.password_sha}`);
+    ctx.body = {}
+  }
+
+  @Get('/-/v1/change_passwd/:username/:password')
+  async get_change_pwd(ctx, next) {
+    console.log('change_passwd ', ctx.request.body)
+    var user = await UserModel.findOne({ where: { name: ctx.params.username } });
+    var salt = user.salt;
+    console.log(`user original password_sha: ${user.password_sha}`);
+    var newPasswordSha = utility.sha1(ctx.params.password + salt);
+    user.password_sha = newPasswordSha;
+    user = await user.save();
+    console.log(`change user password successful!! user new password_sha: ${user.password_sha}`);
+    ctx.body = `change user password successful!! user new password_sha: ${user.password_sha}`;
+  }
 
   // @Post('/-/v1/login')
   // async login(ctx, next) {
@@ -35,7 +70,7 @@ export default class {
   }
 
   @Get('/-/user/org.couchdb.user::name')
-  async show(ctx, next) {
+  async show_user(ctx, next) {
     var name = ctx.params.name;
     var user = await ctx.$service.User.getAndSave(name);
     if (!user) {

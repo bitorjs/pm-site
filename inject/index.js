@@ -217,6 +217,10 @@ export default class extends Koa {
     })
   }
 
+  config(config) {
+    this.$config = Object.assign(this.$config, config)
+  }
+
   start(client, port = 1029) {
 
     this.registerMainClient(client)

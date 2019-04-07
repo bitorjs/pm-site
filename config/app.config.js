@@ -1,10 +1,10 @@
-import os from 'os';
-import fs from 'fs';
-import path from 'path';
-import nfs from 'fs-cnpm';
-import utility from 'utility';
-import mkdirp from 'mkdirp';
-import pkg from '../package.json';
+const os = require('os');
+const utility = require('utility');
+const mkdirp = require('mkdirp');
+const path = require('path');
+const nfs = require('fs-cnpm');
+const pkg = require('../package.json');
+
 
 var version = pkg.version;
 
@@ -280,4 +280,5 @@ const config = {
 
 mkdirp.sync(config.logdir);
 mkdirp.sync(config.uploadDir);
-export default config;
+
+module.exports = config;
